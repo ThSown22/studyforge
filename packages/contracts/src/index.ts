@@ -32,3 +32,27 @@ export interface ReviewItem { id: string; lessonId: string; lessonTitle: string;
 export interface AttemptSummary { id: string; title: string; score: number; passed: boolean; createdAt: string; kind: 'lesson' | 'challenge' }
 export interface Profile { user: User; stats: { completed: number; attempts: number; reviewCount: number }; attempts: AttemptSummary[] }
 export interface ApiErrorBody { error: { code: string; message: string; details?: unknown } }
+
+// V2 contracts are added alongside V1 contracts until the web/API cutover is verified.
+export type LearningStatus = 'new' | 'learning' | 'known';
+export interface CollectionSummary { id: string; name: string; description: string | null; wordCount: number; createdAt: string }
+export interface SavedWordSummary {
+  id: string; term: string; collectionId: string; collectionName: string;
+  status: LearningStatus; savedAt: string; personalNote: string | null;
+}
+export interface DictionaryPronunciation { ipa: string | null; audioUrl: string | null }
+export interface DictionarySense {
+  id: string; order: number; definitionEn: string; definitionVi: string | null;
+  examplesEn: string[]; labels: string[];
+}
+export interface DictionaryEntry {
+  id: string; headword?: string; partOfSpeech: string; labels: string[]; senses: DictionarySense[];
+}
+export interface RelatedTerm { term: string; partOfSpeech: string | null }
+export interface DictionaryResult {
+  term: string; language: 'en'; pronunciations: DictionaryPronunciation[];
+  entries: DictionaryEntry[]; relatedEntries: DictionaryEntry[]; wordFamily: RelatedTerm[]; suggestions: string[];
+  savedWord: SavedWordSummary | null;
+}
+export interface VocabularyStats { total: number; new: number; learning: number; known: number; reviewEvents: number }
+export interface ReviewEventSummary { id: string; savedWordId: string; reviewMode: string; correct: boolean | null; reviewedAt: string }
