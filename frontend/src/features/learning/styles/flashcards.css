@@ -1,0 +1,215 @@
+.learning-flashcards {
+  width:min(1080px,calc(100% - 48px));
+  margin:0 auto;
+  outline:none
+}
+
+.learning-flashcard-top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  font-size:13px;
+  font-weight:750
+}
+
+.learning-card-wrap {
+  position:relative;
+  width:100%;
+  margin:16px auto 20px
+}
+
+.learning-flashcard {
+  width:100%;
+  min-height:390px;
+  padding:60px 36px 104px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+  background:white;
+  border:1px solid #c8dfdf;
+  border-radius:28px;
+  box-shadow:0 18px 48px #004d4f08;
+  cursor:pointer;
+  color:#004d4f;
+  font:inherit;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  transition:background .2s,border-color .2s
+}
+
+.learning-flashcard::after { content:""; position:absolute; width:275px; height:275px; border:1px solid #ffffff16; border-radius:50%; right:-100px; top:-110px; pointer-events:none; }
+.learning-flashcard::before { content:""; position:absolute; width:360px; height:230px; border-radius:50%; background:var(--teal); right:-200px; bottom:-160px; pointer-events:none; }
+.learning-flashcard.flipped::before, .learning-flashcard.flipped::after { display:none; }
+.learning-flashcard .learning-eyebrow { position:absolute; top:28px; left:34px; }
+
+.learning-flashcard:hover {
+  border-color:#20bfb5
+}
+
+.learning-flashcard.flipped {
+  background:#eefaf7;
+  border-color:#83dcd3
+}
+
+.learning-flashcard strong {
+  font-size:clamp(34px,4.5vw,62px);
+  line-height:1.12;
+  letter-spacing:-2.2px;
+  max-width:95%
+}
+
+.learning-flashcard .learning-card-type {
+  font-size:13px;
+  font-weight:750;
+  color:#6f8389
+}
+
+.learning-flashcard em {
+  font-size:11px;
+  font-style:normal;
+  color:#8edbd2;
+  position:absolute;
+  bottom:18px
+}
+
+.learning-flashcard blockquote {
+  font-size:20px;
+  line-height:1.5;
+  margin:0;
+  font-weight:650
+}
+
+.learning-flashcard>span:last-child {
+  color:#627d80;
+  line-height:1.65
+}
+
+.learning-pronunciation {
+  position:absolute;
+  bottom:52px;
+  left:0;
+  right:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:22px;
+  color:#bfe3df;
+  z-index:1;
+  font-size:14px
+}
+.learning-pronunciation .learning-link { color:inherit; border:1px solid #ffffff40; border-radius:10px; padding:9px 13px; font-size:11px; font-weight:800; }
+.learning-card-wrap.flipped .learning-pronunciation { color:var(--ink); }
+.learning-card-wrap.flipped .learning-pronunciation .learning-link { border-color:var(--border); }
+
+.learning-flashcard-controls {
+  justify-content:center
+}
+
+.learning-flashcard-controls button {
+  min-width:165px
+}
+
+.learning-keyboard {
+  margin-top:30px;
+  text-align:center;
+  font-size:11px;
+  color:#004d4f;
+  font-weight:800
+}
+
+.learning-keyboard span {
+  color:#849398;
+  font-weight:500;
+  margin-left:6px
+}
+
+.learning-finish {
+  text-align:center;
+  padding:50px 30px
+}
+
+.learning-finish h1 {
+  font-size:36px;
+  letter-spacing:-1px
+}
+
+.learning-finish>p:not(.learning-eyebrow) {
+  color:#6b8188;
+  line-height:1.7
+}
+.learning-flashcard:not(.flipped) {
+  background:var(--ink);
+  color:#fff;
+  border-color:var(--ink);
+  min-height:390px
+}
+
+.learning-flashcard:not(.flipped) strong {
+  color:white
+}
+
+.learning-flashcard:not(.flipped) .learning-eyebrow {
+  color:#2bd0c3
+}
+
+.learning-flashcard:not(.flipped) .learning-card-type {
+  color:#d7eeeb;
+  background:#ffffff14;
+  border:1px solid #ffffff26;
+  border-radius:30px;
+  padding:7px 15px
+}
+
+.learning-flashcard:not(.flipped) em {
+  color:#8edbd2
+}
+
+.learning-flashcard-controls .learning-btn {
+  width:calc(50% - 7px);
+  max-width:none
+}
+
+.learning-study-clock {
+  display:flex;
+  gap:24px;
+  align-items:center;
+  background:#f0faf8;
+  border:1px solid #bee4de;
+  border-radius:14px;
+  padding:10px 14px;
+  min-height:60px;
+  margin:0 0 16px
+}
+
+.learning-study-clock>span {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:170px
+}
+
+.learning-study-clock small {
+  font-size:9px;
+  letter-spacing:1.3px;
+  font-weight:800;
+  color:#4b8d87
+}
+
+.learning-study-clock strong {
+  font-size:20px;
+  letter-spacing:-.8px
+}
+
+.learning-study-clock>.learning-meter {
+  flex:1;
+  margin:0
+}
+
+.learning-study-clock>b {
+  font-size:12px;
+  white-space:nowrap
+}

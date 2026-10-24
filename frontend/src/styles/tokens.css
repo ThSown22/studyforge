@@ -1,0 +1,19 @@
+:root {
+  --font-body: "Segoe UI", Arial, sans-serif;
+  --content-width: 1296px;
+  --radius-panel: 26px;
+  --radius-control: 11px;
+  --space-section: 28px;
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: #004646;
+  background: #f7f5ef;
+  font-synthesis: none;
+  --ink: #004646;
+  --teal: #27c4b5;
+  --teal-deep: #008078;
+  --muted: #61757b;
+  --border: #d7e1df;
+  --cream: #f7f5ef;
+  --coral: #ff6268;
+}

@@ -1,0 +1,319 @@
+// STUDYFORGE V2 - PostgreSQL logical/physical schema draft
+// Import at https://dbdiagram.io/ -> New Diagram -> paste this DBML.
+// Design goal: ONE saved word per user, ONE collection per saved word,
+// separate shared lexical content from user-owned learning data.
+// IMPORTANT: dictionary content tables must ONLY be populated from sources
+// whose license permits the intended persistent storage, translation, and use.
+// Merriam-Webster API access alone does not establish those permissions.
+
+Project StudyForge_V2 {
+  database_type: 'PostgreSQL'
+  Note: 'StudyForge vocabulary learning system; database design v1.0. Terms of dictionary providers must be respected.'
+}
+
+Enum learning_status {
+  new [note: 'Chua hoc']
+  learning [note: 'Dang hoc']
+  known [note: 'Da nho; user confirms manually']
+}
+
+// ============================ 01. IDENTITY ============================
+Table users [headerColor: #2563EB] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  email varchar(255) [not null]
+  email_normalized varchar(255) [not null, unique, note: 'Lowercase normalized email; maintained by backend']
+  password_hash text [note: 'Nullable for non-password auth accounts']
+  display_name varchar(100) [not null]
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  checks {
+    `length(trim(display_name)) > 0` [name: 'ck_users_display_name']
+  }
+}
+
+Table user_settings [headerColor: #2563EB] {
+  user_id uuid [pk, not null]
+  preferred_definition_language varchar(5) [not null, default: 'en', note: 'en or vi: UI preference, not vocabulary content language']
+  daily_review_goal int [not null, default: 20]
+  timezone varchar(64) [not null, default: 'UTC']
+  updated_at timestamptz [not null, default: `now()`]
+
+  checks {
+    `preferred_definition_language IN ('en', 'vi')` [name: 'ck_settings_language']
+    `daily_review_goal BETWEEN 1 AND 1000` [name: 'ck_settings_goal']
+  }
+}
+
+Table auth_sessions [headerColor: #2563EB] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  token_hash char(64) [not null, unique, note: 'SHA-256 token digest; NEVER store plaintext session tokens']
+  created_at timestamptz [not null, default: `now()`]
+  expires_at timestamptz [not null]
+  revoked_at timestamptz [note: 'Null when active']
+
+  indexes {
+    (user_id, expires_at) [name: 'ix_auth_sessions_user_expires']
+  }
+  checks {
+    `expires_at > created_at` [name: 'ck_sessions_expiry']
+  }
+  Note: 'Optional. Keep only if chosen auth mechanism uses database-backed sessions or refresh tokens.'
+}
+
+// ======================== 02. PERSONAL VOCABULARY ======================
+Table collections [headerColor: #0F766E] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  name varchar(100) [not null]
+  normalized_name varchar(100) [not null, note: 'Normalize trim + case to detect duplicate names for same user']
+  description text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, normalized_name) [unique, name: 'uq_collections_user_name']
+    (user_id, id) [unique, name: 'uq_collections_user_id', note: 'Enables composite FK from saved_words; prevents cross-user collections']
+  }
+  checks {
+    `length(trim(name)) > 0` [name: 'ck_collections_name']
+  }
+}
+
+Table lexemes [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  language_code varchar(10) [not null, default: 'en']
+  term varchar(255) [not null, note: 'Canonical headword or phrase, e.g. migrate, figure out']
+  normalized_term varchar(255) [not null, note: 'Normalize trim/case/spacing; not a lemma expansion']
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (language_code, normalized_term) [unique, name: 'uq_lexemes_language_term']
+  }
+  checks {
+    `length(trim(term)) > 0` [name: 'ck_lexemes_term']
+  }
+  Note: 'Shared identity for a word/phrase; survives removal or replacement of a dictionary provider.'
+}
+
+Table saved_words [headerColor: #0F766E] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  user_id uuid [not null]
+  lexeme_id uuid [not null]
+  collection_id uuid [not null, note: 'A saved word belongs to exactly ONE collection']
+  status learning_status [not null, default: 'new', note: 'MANUAL 3-state label, distinct from SRS due date']
+  personal_note text [note: 'User-authored content, independent of dictionary licensing']
+  saved_at timestamptz [not null, default: `now()`]
+  status_changed_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, lexeme_id) [unique, name: 'uq_saved_words_user_lexeme']
+    (user_id, collection_id, saved_at) [name: 'ix_saved_words_collection_list']
+    (user_id, status) [name: 'ix_saved_words_status']
+  }
+  Note: 'Saving same lexeme again returns existing item. Moving collection updates collection_id; never creates a duplicate.'
+}
+
+Table personal_contexts [headerColor: #0F766E] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  saved_word_id uuid [not null]
+  sentence text [not null, note: 'Optional sentence user chose to keep; no site URL, YouTube ID or capture source']
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (saved_word_id, created_at) [name: 'ix_personal_contexts_word_recent']
+  }
+  checks {
+    `length(trim(sentence)) > 0` [name: 'ck_personal_context_sentence']
+  }
+  Note: 'Optional feature: personal example/context only, without origin metadata. Can defer migration until needed.'
+}
+
+// ========================= 03. DICTIONARY ==============================
+Table dictionary_sources [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  code varchar(60) [not null, unique, note: 'e.g. merriam_webster_learners, wiktionary_licensed']
+  display_name varchar(150) [not null]
+  license_name varchar(120)
+  license_url text
+  attribution_text text
+  storage_policy varchar(24) [not null, default: 'live_only', note: 'live_only or licensed_persist']
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+
+  checks {
+    `storage_policy IN ('live_only', 'licensed_persist')` [name: 'ck_source_storage_policy']
+  }
+  Note: 'Dictionary CONTENT provider metadata, NOT the website/video where a user encountered a word.'
+}
+
+Table dictionary_entries [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  lexeme_id uuid [not null]
+  source_id uuid [not null]
+  provider_entry_key varchar(255) [not null, note: 'Provider entry identity, e.g. Merriam-Webster meta.id']
+  part_of_speech varchar(60) [not null, note: 'noun, verb, adjective, adverb, etc; open string for provider-specific labels']
+  grammar_label varchar(160) [note: 'e.g. transitive, intransitive, count']
+  display_order int [not null, default: 1]
+  fetched_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (source_id, provider_entry_key) [unique, name: 'uq_dictionary_provider_entry']
+    (lexeme_id, source_id, display_order) [name: 'ix_dictionary_entries_lookup']
+  }
+  checks {
+    `display_order > 0` [name: 'ck_dictionary_entry_order']
+  }
+  Note: 'One headword can have multiple entries/parts of speech/homographs; content persistence ONLY when contract allows.'
+}
+
+Table dictionary_pronunciations [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  entry_id uuid [not null]
+  ipa varchar(160)
+  region_code varchar(12) [note: 'e.g. en-US, en-GB if available; do not invent']
+  audio_token varchar(160) [note: 'Provider audio identifier, not a user-capture URL']
+  display_order int [not null, default: 1]
+
+  indexes {
+    (entry_id, display_order) [unique, name: 'uq_pronunciations_entry_order']
+  }
+  checks {
+    `(ipa IS NOT NULL OR audio_token IS NOT NULL)` [name: 'ck_pronunciation_has_data']
+    `display_order > 0` [name: 'ck_pronunciation_order']
+  }
+}
+
+Table dictionary_senses [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  entry_id uuid [not null]
+  display_order int [not null]
+  sense_number varchar(40) [note: 'Provider marker, e.g. 1, 1a, 2']
+  sense_path varchar(160) [note: 'Flattened hierarchical key for complex Merriam-Webster sseq']
+  definition_en text [not null, note: 'Normalized safe plain text, not raw MW markup']
+  usage_labels jsonb [note: 'Optional structured label list such as of a bird or animal']
+
+  indexes {
+    (entry_id, display_order) [unique, name: 'uq_senses_entry_order']
+  }
+  checks {
+    `display_order > 0` [name: 'ck_sense_order']
+    `length(trim(definition_en)) > 0` [name: 'ck_sense_definition']
+  }
+  Note: 'Stores all senses returned by the selected eligible source; do NOT use MW shortdef as full dictionary.'
+}
+
+Table sense_examples [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  sense_id uuid [not null]
+  example_en text [not null]
+  display_order int [not null]
+
+  indexes {
+    (sense_id, display_order) [unique, name: 'uq_examples_sense_order']
+  }
+  checks {
+    `display_order > 0` [name: 'ck_example_order']
+  }
+}
+
+Table sense_translations [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  sense_id uuid [not null]
+  language_code varchar(12) [not null, default: 'vi']
+  translated_definition text [not null]
+  translation_method varchar(20) [not null, note: 'human, machine, or dictionary']
+  reviewed_at timestamptz [note: 'When human checked translation']
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (sense_id, language_code) [unique, name: 'uq_sense_translations_locale']
+  }
+  checks {
+    `translation_method IN ('human', 'machine', 'dictionary')` [name: 'ck_translation_method']
+  }
+  Note: 'Translation of a particular SENSE, not a generic translation of the term; store only with applicable rights.'
+}
+
+Table related_terms [headerColor: #7C3AED] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  lexeme_id uuid [not null]
+  source_id uuid [not null]
+  related_term varchar(255) [not null, note: 'e.g. migration for migrate']
+  normalized_related_term varchar(255) [not null]
+  part_of_speech varchar(60) [note: 'Word-family member POS, NOT the POS of base term']
+  relation_kind varchar(30) [not null, default: 'derived', note: 'derived, inflection, related']
+  display_order int [not null, default: 1]
+
+  indexes {
+    (lexeme_id, source_id, normalized_related_term, relation_kind) [unique, name: 'uq_related_terms']
+  }
+  checks {
+    `relation_kind IN ('derived', 'inflection', 'related')` [name: 'ck_related_kind']
+  }
+  Note: 'Supports Word Family (MW uros), without automatically saving the related term for a user.'
+}
+
+// ======================= 04. LEARNING & REVIEW =========================
+Table review_events [headerColor: #D97706] {
+  id uuid [pk, not null, default: `gen_random_uuid()`]
+  saved_word_id uuid [not null]
+  review_mode varchar(40) [not null, note: 'flashcard, typing, multiple_choice, listening, etc']
+  rating smallint [note: 'Optional 1..4: Again/Hard/Good/Easy when scheduling is enabled']
+  was_correct boolean [note: 'Optional objective score, independent of user status label']
+  duration_ms int [note: 'Optional elapsed interaction time']
+  reviewed_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (saved_word_id, reviewed_at) [name: 'ix_review_events_word_time']
+  }
+  checks {
+    `(rating IS NULL OR rating BETWEEN 1 AND 4)` [name: 'ck_review_rating']
+    `(duration_ms IS NULL OR duration_ms >= 0)` [name: 'ck_review_duration']
+  }
+  Note: 'Append-only activity history; manual known/learning/new label remains in saved_words.'
+}
+
+Table review_schedules [headerColor: #D97706] {
+  saved_word_id uuid [pk, not null]
+  scheduler_name varchar(40) [not null, default: 'fsrs']
+  due_at timestamptz [not null]
+  last_reviewed_at timestamptz
+  repetitions int [not null, default: 0]
+  lapses int [not null, default: 0]
+  scheduler_state jsonb [note: 'Algorithm-specific stability, difficulty etc; versioned in application code']
+  updated_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    due_at [name: 'ix_review_schedules_due']
+  }
+  checks {
+    `repetitions >= 0` [name: 'ck_schedule_reps']
+    `lapses >= 0` [name: 'ck_schedule_lapses']
+  }
+  Note: 'Optional scheduling engine. Due date NEVER auto-marks saved_words.status as known.'
+}
+
+// ========================== FOREIGN KEYS ==============================
+Ref: users.id - user_settings.user_id [delete: cascade]
+Ref: auth_sessions.user_id > users.id [delete: cascade]
+Ref: collections.user_id > users.id [delete: cascade]
+Ref: saved_words.user_id > users.id [delete: cascade]
+Ref: saved_words.lexeme_id > lexemes.id [delete: restrict]
+Ref: saved_words.(user_id, collection_id) > collections.(user_id, id) [delete: restrict]
+Ref: personal_contexts.saved_word_id > saved_words.id [delete: cascade]
+
+Ref: dictionary_entries.lexeme_id > lexemes.id [delete: restrict]
+Ref: dictionary_entries.source_id > dictionary_sources.id [delete: cascade]
+Ref: dictionary_pronunciations.entry_id > dictionary_entries.id [delete: cascade]
+Ref: dictionary_senses.entry_id > dictionary_entries.id [delete: cascade]
+Ref: sense_examples.sense_id > dictionary_senses.id [delete: cascade]
+Ref: sense_translations.sense_id > dictionary_senses.id [delete: cascade]
+Ref: related_terms.lexeme_id > lexemes.id [delete: restrict]
+Ref: related_terms.source_id > dictionary_sources.id [delete: cascade]
+
+Ref: review_events.saved_word_id > saved_words.id [delete: cascade]
+Ref: saved_words.id - review_schedules.saved_word_id [delete: cascade]

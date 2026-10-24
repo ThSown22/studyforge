@@ -1,0 +1,192 @@
+@media (min-width: 1500px) { .header-inner { max-width: 1324px; } }
+@media (max-width: 1400px) {
+  .header-inner { padding: 0 32px; }
+  .hero { padding: 45px; gap: 35px; }
+  .roadmap-canvas { padding: 32px 42px; }
+  .challenge-banner { flex-wrap: wrap; }
+}
+@media (max-width: 1100px) {
+  .hero { padding: 35px; gap: 28px; grid-template-columns: 1.2fr 1fr; }
+  .hero h1 { font-size: 50px; letter-spacing: -2.5px; }
+  .hero-actions .btn { min-width: 0; padding: 14px 20px; }
+  .next-steps > i { display: none; }
+  .next-steps > span { padding: 8px; gap: 6px; }
+  .next-title { font-size: 28px; }
+  .growth-section { padding: 35px; gap: 25px; grid-template-columns: 1.5fr 1fr; }
+  .growth-copy h2 { font-size: 46px; }
+  .growth-stages small { font-size: 8px; }
+  .roadmap-grid { grid-template-columns: 275px minmax(0,1fr); gap: 18px; }
+  .roadmap-canvas { padding: 27px; }
+  .unit-intro { padding: 16px; }
+  .unit-intro-heading h2 { font-size: 22px; }
+  .lesson-node { min-width: 84px; width: 84px; height: 84px; }
+  .lesson-node strong { font-size: 24px; }
+  .lesson-path-card { padding: 18px; }
+  .lesson-path-card > strong { font-size: 20px; }
+  .path-connector { width: 30px; }
+  .lesson-path-item::after { right: -18px; width: 30px; }
+  .lesson-path-item.reverse::after { left: -18px; }
+  .sentence-parts { gap: 8px; }
+  .sentence-parts > div { min-width: 70px; padding: 10px; }
+  .sentence-parts strong { font-size: 20px; }
+}
+@media (max-width: 800px) {
+  .page-container { width: calc(100% - 36px); margin-top: 24px; }
+  .header-inner { padding: 0 20px; gap: 15px; }
+  .brand small { font-size: 8px; letter-spacing: 1px; }
+  .brand > span { font-size: 25px; }
+  .main-navigation { gap: 22px; }
+  .account-label { display: none; }
+  .account-menu > summary { padding: 5px; gap: 0; }
+  .account-menu .chevron { display: none; }
+  .account-menu { flex: 0; }
+  .brand { flex: 1; }
+  .hero { grid-template-columns: 1fr; padding: 34px; gap: 28px; }
+  .hero h1 { font-size: 55px; letter-spacing: -3px; }
+  .next-lesson-card { max-width: none; min-height: 290px; }
+  .next-title { max-width: 450px; min-height: auto; }
+  .next-steps { max-width: 500px; }
+  .next-steps > i { display: block; }
+  .next-steps > span { padding: 12px; }
+  .next-steps small { font-size: 10px; }
+  .next-steps strong { font-size: 13px; }
+  .growth-section { grid-template-columns: 1fr; padding: 30px; gap: 0; }
+  .tree-scene { width: min(420px,100%); margin: 0 auto; }
+  .growth-stages small { font-size: 9px; }
+  .course-grid { gap: 18px; }
+  .course-copy { padding: 24px; }
+  .course-copy h3 { font-size: 23px; }
+  .course-art { padding: 24px 20px 0; height: 185px; }
+  .sentence-parts > div { min-width: 59px; }
+  .sentence-parts small { font-size: 8px; }
+  .sentence-parts strong { font-size: 16px; }
+  .sentence-parts { gap: 5px; }
+  .word-sample { padding: 14px; }
+  .word-sample > strong { font-size: 20px; }
+  .section-heading { display: block; }
+  .section-heading > span { display: block; margin-top: 10px; }
+  .review-banner { align-items: flex-start; flex-direction: column; }
+  .roadmap-heading { flex-wrap: wrap; margin-bottom: 25px; gap: 20px; }
+  .roadmap-heading h1 { font-size: 43px; letter-spacing: -2px; }
+  .roadmap-grid { grid-template-columns: 1fr; }
+  .sidebar-heading { padding: 20px; }
+  .sidebar-heading h2 { font-size: 23px; margin-bottom: 7px; }
+  .sidebar-heading .eyebrow { margin-bottom: 7px; }
+  .unit-list { display: flex; max-height: none; overflow-x: auto; padding: 10px; gap: 8px; }
+  .unit-button { min-width: 225px; padding: 13px 10px; }
+  .unit-sidebar { border-radius: 20px; }
+  .roadmap-canvas { padding: 26px; border-radius: 20px; }
+  .unit-intro-heading h2 { font-size: 25px; }
+  .challenge-banner { flex-wrap: nowrap; }
+  .lesson-node { min-width: 96px; width: 96px; height: 96px; }
+  .lesson-path-card > strong { font-size: 24px; }
+  .path-connector { width: 40px; }
+  .lesson-path-item::after { right: -18px; }
+}
+@media (max-width: 520px) {
+  .site-header { height: 72px; }
+  .header-inner { padding: 0 13px; gap: 14px; }
+  .brand > span { font-size: 23px; letter-spacing: -1.6px; }
+  .brand small { display: none; }
+  .main-navigation { gap: 19px; }
+  .main-navigation a { font-size: 11px; }
+  .main-navigation a[aria-current="page"]::after { bottom: 14px; }
+  .account-avatar { width: 31px; height: 31px; }
+  .account-menu > summary { padding: 5px; }
+  .account-panel { width: min(316px,calc(100vw - 28px)); right: 0; }
+  .page-container { width: calc(100% - 28px); margin-top: 16px; }
+  .hero { padding: 25px 18px 22px; border-radius: 22px; gap: 25px; }
+  .hero h1 { font-size: 32px; letter-spacing: -1.8px; line-height: 1.03; margin-bottom: 20px; }
+  .hero-copy > p { font-size: 15px; line-height: 1.65; margin-bottom: 24px; }
+  .hero-actions { gap: 10px; }
+  .hero-actions .btn { flex: 1; padding: 14px 10px; font-size: 11px; gap: 12px; }
+  .next-lesson-card { padding: 20px 16px; min-height: 325px; border-radius: 20px; }
+  .next-head small { font-size: 10px; }
+  .next-head b { font-size: 11px; }
+  .next-title { font-size: 26px; max-width: 260px; margin: 20px 0 28px; min-height: 65px; }
+  .next-steps > span { padding: 10px; gap: 9px; }
+  .next-steps > span > b { min-width: 33px; }
+  .next-steps small { font-size: 9px; letter-spacing: 1.1px; }
+  .next-steps strong { font-size: 10px; line-height: 1.2; }
+  .next-steps > i { font-size: 9px; }
+  .next-count { font-size: 10px; }
+  .growth-section { padding: 28px 20px; margin-top: 22px; border-radius: 22px; }
+  .growth-copy h2 { font-size: 40px; letter-spacing: -2px; }
+  .growth-copy > p { font-size: 13px; margin-bottom: 22px; }
+  .growth-meter { padding: 14px 10px; border-radius: 15px; }
+  .meter-heading { font-size: 10px; }
+  .growth-stages { margin-top: 20px; }
+  .growth-stages li { gap: 10px; }
+  .growth-stages li > span { width: 27px; height: 29px; font-size: 8px; border-radius: 9px; }
+  .growth-stages li::before { top: 14px; }
+  .growth-stages small { font-size: 7px; white-space: normal; text-align: center; line-height: 1.35; max-width: 45px; }
+  .tree-scene { min-height: 250px; }
+  .progress-tree { min-height: 210px; }
+  .choose-section { margin-top: 32px; }
+  .section-heading h2 { font-size: 28px; letter-spacing: -1.2px; }
+  .section-heading > span { font-size: 11px; }
+  .course-grid { grid-template-columns: 1fr; gap: 18px; }
+  .course-art { height: 200px; }
+  .sentence-parts { gap: 14px; margin-top: 24px; }
+  .sentence-parts > div { min-width: 70px; padding: 11px; }
+  .sentence-parts strong { font-size: 22px; }
+  .sentence-parts small { font-size: 10px; }
+  .course-copy { padding: 24px; }
+  .course-copy h3 { font-size: 25px; }
+  .course-copy p { font-size: 13px; }
+  .word-sample { padding: 15px 22px; max-width: 270px; }
+  .word-sample > strong { font-size: 25px; }
+  .guest-note { align-items: flex-start; padding: 22px 10px 0; gap: 10px; }
+  .guest-note p { font-size: 12px; }
+  .sample-note { font-size: 10px; line-height: 1.6; }
+  .support-fab { right: 12px; bottom: 14px; padding: 5px; }
+  .support-fab strong { display: none; }
+  .support-fab > span { width: 33px; height: 33px; }
+  .site-footer { margin-top: 40px; }
+  .roadmap-heading h1 { font-size: 36px; margin-top: 12px; }
+  .roadmap-heading .muted { font-size: 12px; }
+  .roadmap-heading { gap: 16px; }
+  .roadmap-heading .eyebrow { font-size: 10px; }
+  .track-switch { width: 100%; }
+  .track-switch a { width: 50%; text-align: center; padding: 12px; }
+  .roadmap-canvas { padding: 18px 15px; }
+  .unit-intro { padding: 15px; border-radius: 18px; }
+  .unit-intro-heading { gap: 12px; align-items: flex-start; margin: 0 0 15px; }
+  .unit-big-badge { min-width: 46px; height: 46px; font-size: 13px; border-radius: 12px; }
+  .unit-intro-heading h2 { font-size: 21px; letter-spacing: -.9px; }
+  .unit-intro-heading p { font-size: 11px; }
+  .challenge-banner { display: block; padding: 17px; border-radius: 14px; }
+  .challenge-banner h3 { font-size: 22px; }
+  .challenge-banner .btn { margin-top: 17px; width: 100%; min-height: 42px; padding: 12px; }
+  .challenge-banner .eyebrow { font-size: 8px; letter-spacing: 1px; }
+  .vocab-intro-action { display: block; }
+  .vocab-intro-action > span { display: block; margin-top: 12px; }
+  .lesson-path { padding-top: 30px; }
+  .lesson-path-item, .lesson-path-item.reverse { margin: 0 0 26px; flex-direction: row; min-height: 115px; }
+  .lesson-node { min-width: 58px; width: 58px; height: 58px; border-width: 2px; box-shadow: 0 0 0 4px #e1f4f0,0 4px 0 3px #c3dfdb; gap: 3px; }
+  .lesson-node strong { font-size: 21px; letter-spacing: -.9px; }
+  .lesson-node small { font-size: 7px; }
+  .path-connector { width: 17px; }
+  .lesson-path-item.reverse .path-connector::after { transform: none; left: auto; right: 0; }
+  .lesson-path-card { padding: 16px 12px; border-radius: 14px; min-height: 110px; gap: 8px; }
+  .lesson-path-card > strong { font-size: 19px; letter-spacing: -.8px; }
+  .lesson-path-card .eyebrow { font-size: 8px; line-height: 1.6; letter-spacing: .8px; }
+  .lesson-path-card > small { font-size: 9px; margin-top: 2px; }
+  .lesson-path-card > .muted { font-size: 10px; }
+  .lesson-path-item::after, .lesson-path-item.reverse::after { left: 28px; width: 0; top: 90px; height: 78px; border: 0; border-left: 2px dashed #beddd8; border-radius: 0; }
+  .modal { padding: 30px 23px; border-radius: 22px; }
+  .modal h2 { font-size: 28px; }
+  .lesson-dialog-head { gap: 12px; padding-right: 0; margin: 12px 0 22px; }
+  .lesson-dialog-head h2 { font-size: 23px; }
+  .lesson-dialog-head .eyebrow { font-size: 9px; letter-spacing: 1px; }
+  .lesson-number { width: 49px; height: 49px; font-size: 20px; border-radius: 13px; }
+  .lesson-stages { gap: 10px; }
+  .lesson-stages article { padding: 15px 10px; gap: 8px; }
+  .lesson-stages article strong { font-size: 16px; }
+  .lesson-stages article span { font-size: 9px; }
+  .lesson-status { padding: 16px; }
+  .dialog-actions .btn { padding: 13px 15px; font-size: 12px; }
+  .empty-state { margin: 35px 14px; padding: 40px 22px; }
+  .empty-state h1 { font-size: 29px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
