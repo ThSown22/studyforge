@@ -27,6 +27,7 @@
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "test:v2": "node --experimental-strip-types --test tests/dictionary-parser.test.ts tests/dictionary-client.test.ts tests/v2-business.test.ts",
     "compose:up": "docker compose up --build -d",
-    "compose:down": "docker compose down"
+    "compose:down": "docker compose down",
+    "smoke:v2": "docker compose --profile qa run --rm smoke"
   }
 }

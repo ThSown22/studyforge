@@ -14,7 +14,8 @@ Cần Docker Desktop chạy với Linux containers và Docker Compose. Không c�
 2. Tại thư mục gốc chạy `docker compose up --build -d`.
 3. Xem `docker compose ps` và `docker compose logs --tail=100 db migrate backend frontend`.
 4. Mở `http://localhost:3000`. Health API qua frontend proxy: `http://localhost:3000/api/health`.
-5. Dừng bằng `docker compose down`. **Không thêm `-v`** nếu muốn giữ dữ liệu PostgreSQL.
+5. Chạy smoke test container bằng `docker compose --profile qa run --rm smoke`. Test tạo tài khoản/từ ngẫu nhiên rồi xóa dữ liệu test khi kết thúc. Không cần dictionary key cho smoke test này.
+6. Dừng bằng `docker compose down`. **Không thêm `-v`** nếu muốn giữ dữ liệu PostgreSQL.
 
 Compose khởi động `db` trước, chờ healthcheck, chạy `migrate` một lần rồi mới mở `backend`, sau đó `frontend`. Migration có ledger/checksum; chạy lại bằng `docker compose run --rm migrate`. Volume `studyforge-postgres` giữ dữ liệu qua lần dừng và build lại. Không có seed tự động.
 

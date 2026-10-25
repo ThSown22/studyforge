@@ -19,7 +19,7 @@ COPY --from=backend-dependencies /app/node_modules ./node_modules
 COPY --from=backend-build /app/dist/backend ./dist/backend
 COPY --from=backend-build /app/dist/packages ./dist/packages
 COPY database/migrations/postgres ./database/migrations/postgres
-COPY scripts/migrate-postgres.mjs ./scripts/migrate-postgres.mjs
+COPY scripts/migrate-postgres.mjs scripts/smoke-v2.mjs ./scripts/
 RUN mkdir /app/empty-public && chown -R node:node /app
 USER node
 EXPOSE 3001

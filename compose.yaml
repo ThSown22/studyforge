@@ -73,5 +73,23 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  smoke:
+    profiles: ["qa"]
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    command: ["node", "scripts/smoke-v2.mjs"]
+    environment:
+      SMOKE_TEST_ENABLED: "true"
+      SMOKE_BASE_URL: http://frontend:3000
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: studyforge
+      PGPASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+      PGDATABASE: studyforge
+    depends_on:
+      frontend:
+        condition: service_healthy
+    restart: "no"
 volumes:
   studyforge-postgres:
