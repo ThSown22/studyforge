@@ -4,7 +4,7 @@ StudyForge là ứng dụng học từ vựng tiếng Anh cá nhân: tra từ, l
 
 ## Trạng thái hiện tại
 
-Mã V2 đã có API auth, collections, saved words, dictionary adapter và review events; giao diện web có Trang chủ, Kho từ, Tra từ, nhập từ thủ công và lượt ôn tự đánh giá. **Build và luồng end-to-end trong Docker chưa được xác nhận trong phiên Codex này** vì Docker daemon không cho phiên truy cập. Từ điển cần Merriam-Webster Learner's API key. Khi không có key, tra từ và phần lật thẻ cần định nghĩa trả lỗi rõ ràng; ứng dụng không giả lập nghĩa. Bản dịch từng sense tiếng Việt và Chrome Extension chưa hoàn thành.
+Mã V2 đã có API auth, collections, saved words, dictionary adapter và review events; giao diện web có Trang chủ, Kho từ, Tra từ, nhập từ thủ công và lượt ôn tự đánh giá. Ngày 25/10/2026, người dùng đã chạy thành công `docker compose --profile qa run --build --rm smoke`; luồng qua frontend proxy → backend → PostgreSQL đã xác nhận auth/session, tạo bộ sưu tập, lưu từ không trùng, đổi trạng thái, hàng đợi ôn, review event và thống kê. Từ điển cần Merriam-Webster Learner's API key. Khi không có key, tra từ và phần lật thẻ cần định nghĩa trả lỗi rõ ràng; ứng dụng không giả lập nghĩa. Bản dịch từng sense tiếng Việt và Chrome Extension chưa hoàn thành.
 
 ## Chạy local bằng Docker Compose
 
@@ -19,11 +19,11 @@ Cần Docker Desktop chạy với Linux containers và Docker Compose. Không c�
 
 Compose khởi động `db` trước, chờ healthcheck, chạy `migrate` một lần rồi mới mở `backend`, sau đó `frontend`. Migration có ledger/checksum; chạy lại bằng `docker compose run --rm migrate`. Volume `studyforge-postgres` giữ dữ liệu qua lần dừng và build lại. Không có seed tự động.
 
-Cổng web đổi bằng `STUDYFORGE_HOST_FE_PORT` trong `.env`. Compose inject cấu hình backend lúc chạy; image không chứa mật khẩu. `backend/.env.example` mô tả các biến backend cho môi trường khác, còn `frontend/.env.example` chỉ có cấu hình công khai/proxy. Không copy secrets vào frontend.
+Cổng web đổi bằng `STUDYFORGE_HOST_FE_PORT` trong `.env`. Root `.env` là file cấu hình duy nhất Docker Compose tự đọc và file này được Git ignore. Compose inject cấu hình backend/frontend lúc chạy; image không chứa mật khẩu. `backend/.env.example` và `frontend/.env.example` chỉ dành cho trường hợp chạy từng tiến trình trực tiếp ngoài Compose; các file `backend/.env` và `frontend/.env` không được Compose sử dụng. Không copy secrets vào frontend.
 
 ## Dependencies và kiểm tra
 
-`backend/package.json` cùng `backend/package-lock.json` khóa `pg` và `@types/pg` cho backend. Root `package.json`/`package-lock.json` quản lý TypeScript dùng cho tooling. Dockerfile backend dùng `npm ci` từ backend lockfile và build bằng Node 22; không cần `npm install -g`. Kiểm tra cú pháp Compose: `docker compose --env-file .env.example config --quiet`. Unit tests V2: `npm run test:v2` nếu dependencies môi trường đã sẵn; kiểm tra đầy đủ phải chạy lại trong Docker khi daemon truy cập được. Các lệnh `dev`, `start`, `db:migrate`, `test` cũ hiện phục vụ V1 và chưa phải quy trình chạy V2.
+`backend/package.json` cùng `backend/package-lock.json` khóa `pg` và `@types/pg` cho backend. Root `package.json`/`package-lock.json` quản lý TypeScript dùng cho tooling. Dockerfile backend dùng `npm ci` từ backend lockfile và build bằng Node 22; không cần `npm install -g`. Kiểm tra cú pháp Compose: `docker compose --env-file .env.example config --quiet`. Unit tests V2: `npm run test:v2` nếu dependencies môi trường đã sẵn. Smoke test Compose đã được người dùng xác nhận chạy thành công ngày 25/10/2026; persistence qua restart, browser QA và tích hợp Dictionary API thật vẫn cần kiểm tra riêng. Các lệnh `dev`, `start`, `db:migrate`, `test` cũ hiện phục vụ V1 và chưa phải quy trình chạy V2.
 
 ## Tài liệu
 
