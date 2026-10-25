@@ -1,9 +1,7 @@
-# Trạng thái database
+# Database V2
 
-**Mục tiêu V2:** PostgreSQL chạy trong Docker, không nạp nội dung học mẫu. Thiết kế schema và container chưa được triển khai ở giai đoạn chỉ sắp xếp source.
+PostgreSQL 17 chạy trong Docker Compose, volume `studyforge-postgres`. Migration `001_core.sql` tạo `users`, `user_settings`, `auth_sessions`, `collections`, `lexemes`, `saved_words`, `review_events`. Unique `(user_id, lexeme_id)` giữ mỗi từ một bản lưu/người dùng; foreign key kép giữ bộ sưu tập thuộc cùng user. `learning_status` chỉ có `new`, `learning`, `known`. Không có seed.
 
-Hiện trong `database/migrations/` còn hai migration của V1 dùng **cú pháp SQLite**. Adapter tại `backend/src/infrastructure/database/connection.ts` cũng dùng `node:sqlite`. Các file này là mã cũ để tham khảo, **không phải migration PostgreSQL** và không được áp dụng cho PostgreSQL.
+`002_dictionary.sql` mô tả nguồn và nội dung từ điển có thể lưu **chỉ khi** giấy phép cho phép (`licensed_persist`). Nguồn `live_only` bị trigger ngăn ghi nội dung lâu dài. Adapter Merriam-Webster hiện chỉ truy vấn trực tiếp và trả dữ liệu chuẩn hóa cho client, không ghi vào các bảng dictionary. Bản dịch VI theo từng sense chưa có provider, nên `definitionVi` hiện null. Không suy ra license từ khả năng gọi API.
 
-Cơ chế nạp seed tự động đã gỡ khỏi `backend/src/app.ts`, lệnh `db:seed` đã gỡ khỏi `package.json`. Dữ liệu SQLite cũ cùng file seed được chuyển vào `.tmp/retired-v1/`, ngoài cây source/đường dẫn runtime và được `.gitignore` loại trừ. Sandbox không cho xóa, nên chúng vẫn còn trên ổ đĩa cho tới khi người dùng xóa thủ công.
-
-Schema V2 sẽ được thiết kế theo nhu cầu lưu từ tra cứu vào bộ sưu tập và ôn tập; không chuyển nguyên bảng `units/lessons/questions/XP` từ V1 sang PostgreSQL. Cần chốt mô hình và migration trước khi viết repository mới hoặc khởi chạy database.
+`scripts/migrate-postgres.mjs` dùng `schema_migrations` (version + SHA256) và advisory lock. Một migration đã áp dụng không được sửa nội dung; thay đổi schema tiếp theo cần file mới. V1 SQLite và bản backup nằm ngoài volume PostgreSQL; không có quy trình import người dùng tự động. Lệnh dừng an toàn là `docker compose down`, không dùng `down -v` khi muốn giữ dữ liệu.

@@ -1,7 +1,12 @@
-# Legacy V1 SQLite image; PostgreSQL V2 is not configured yet.
-FROM node:22.23.4-bookworm-slim AS build
+# syntax=docker/dockerfile:1.7
+FROM node:22.23.4-bookworm-slim AS backend-dependencies
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY backend/package.json backend/package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --ignore-scripts
+
+FROM node:22.23.4-bookworm-slim AS backend-build
+WORKDIR /app
+COPY package.json ./
 COPY scripts/build.mjs scripts/paths.mjs scripts/frontend-config.mjs ./scripts/
 COPY backend/src ./backend/src
 COPY packages ./packages
@@ -9,13 +14,14 @@ RUN node scripts/build.mjs --backend-only
 
 FROM node:22.23.4-bookworm-slim
 WORKDIR /app
-ENV NODE_ENV=production HOST=0.0.0.0 API_PORT=3001 SECURE_COOKIES=true DATABASE_PATH=/app/data/studyforge.sqlite FRONTEND_DIR=/app/empty-public
-COPY --from=build /app/dist/backend ./dist/backend
-COPY --from=build /app/dist/packages ./dist/packages
-COPY database/migrations ./database/migrations
-COPY package.json ./
-RUN mkdir /app/data /app/empty-public && chown -R node:node /app/data
+ENV NODE_ENV=production HOST=0.0.0.0 API_PORT=3001 FRONTEND_DIR=/app/empty-public
+COPY --from=backend-dependencies /app/node_modules ./node_modules
+COPY --from=backend-build /app/dist/backend ./dist/backend
+COPY --from=backend-build /app/dist/packages ./dist/packages
+COPY database/migrations/postgres ./database/migrations/postgres
+COPY scripts/migrate-postgres.mjs ./scripts/migrate-postgres.mjs
+RUN mkdir /app/empty-public && chown -R node:node /app
 USER node
 EXPOSE 3001
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD node -e "fetch('http://127.0.0.1:'+process.env.API_PORT+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-CMD ["node", "dist/backend/src/main.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s CMD node -e "fetch('http://127.0.0.1:'+process.env.API_PORT+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["node", "dist/backend/src/v2-main.js"]

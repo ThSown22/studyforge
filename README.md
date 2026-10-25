@@ -1,31 +1,37 @@
-# StudyForge
+# StudyForge V2
 
-StudyForge đang ở **giai đoạn 1: chuẩn hóa cấu trúc source**. Định hướng V2 là ứng dụng lưu từ vựng cá nhân thành bộ sưu tập, tra từ trên web và qua Chrome Extension, rồi ôn tập theo nhiều cách. Frontend, backend và hợp đồng API đã được tách thành các khu vực rõ ràng. Mã V1 (ngữ pháp, quiz, XP) còn trong source để làm cơ sở tham khảo; chưa phải chức năng V2 đã hoàn thành.
+StudyForge là ứng dụng học từ vựng tiếng Anh cá nhân: tra từ, lưu mỗi từ vào đúng một bộ sưu tập, tự đánh dấu Chưa học/Đang học/Đã nhớ và ôn bằng thẻ. Dự án đang chuyển từ V1 sang V2 trên codebase hiện có. Giao diện V1 và adapter SQLite còn trong source để tham khảo, nhưng Compose V2 dùng PostgreSQL và không nạp dữ liệu mẫu.
 
-**Trạng thái database:** dữ liệu SQLite cũ và bộ seed đã được đưa ra khỏi cây source đang dùng. Backend hiện vẫn chứa adapter và migration SQLite của V1. PostgreSQL trong Docker là mục tiêu của bước triển khai database tiếp theo; **chưa có schema PostgreSQL, container PostgreSQL hay migration chuyển đổi**. Không dùng Compose hiện tại để coi như đã triển khai V2.
+## Trạng thái hiện tại
 
-## Bố cục
+Mã V2 đã có API auth, collections, saved words, dictionary adapter và review events; giao diện web có Trang chủ, Kho từ, Tra từ và lượt ôn tự đánh giá. **Build và luồng end-to-end trong Docker chưa được xác nhận trong phiên Codex này** vì Docker daemon không cho phiên truy cập. Từ điển cần Merriam-Webster Learner's API key. Khi không có key, tra từ và phần lật thẻ cần định nghĩa trả lỗi rõ ràng; ứng dụng không giả lập nghĩa. Bản dịch từng sense tiếng Việt và Chrome Extension chưa hoàn thành.
 
-- `frontend/src/pages`: trang; `features`: tương tác theo nghiệp vụ; `components`: UI dùng lại; `layouts`: khung trang; `services`: API client; `core` và `styles`: tiện ích và CSS.
-- `backend/src/modules`: nhóm nghiệp vụ. Mỗi module đặt controller, service và repository khi cần. `http` xử lý HTTP chung; `config` đọc môi trường; `infrastructure/database` chứa adapter DB; `shared` chứa mã dùng chung.
-- `database/migrations`: migration hiện tại của V1, dùng cú pháp SQLite. Sẽ được thay bằng migration PostgreSQL sau khi chốt schema V2.
-- `packages/contracts`: kiểu dữ liệu trao đổi frontend/backend.
-- `infra/docker`, `compose.yaml`: cấu hình V1 còn lưu để tham chiếu; chưa chuyển sang PostgreSQL.
-- `scripts`, `tests`, `docs`: công cụ phát triển, kiểm thử và tài liệu.
+## Chạy local bằng Docker Compose
 
-Xem [cấu trúc chi tiết](docs/project-structure.md), [kiến trúc](docs/architecture.md), [trạng thái database](docs/database.md) và [mức độ sẵn sàng DevOps](docs/devops-readiness.md).
+Cần Docker Desktop chạy với Linux containers và Docker Compose. Không cần cài PostgreSQL Server hoặc chạy backend trên Windows.
 
-## Môi trường phát triển
+1. Sao chép `.env.example` thành `.env` ở thư mục gốc, đổi `STUDYFORGE_DB_PASSWORD` thành mật khẩu dài, ngẫu nhiên. File `.env` được Git ignore. Điền `STUDYFORGE_MERRIAM_WEBSTER_API_KEY` nếu có quyền sử dụng API; không đặt key trong frontend.
+2. Tại thư mục gốc chạy `docker compose up --build -d`.
+3. Xem `docker compose ps` và `docker compose logs --tail=100 db migrate backend frontend`.
+4. Mở `http://localhost:3000`. Health API qua frontend proxy: `http://localhost:3000/api/health`.
+5. Dừng bằng `docker compose down`. **Không thêm `-v`** nếu muốn giữ dữ liệu PostgreSQL.
 
-Node.js >= 22.23.4; dependency TypeScript nằm trong `node_modules` của project, khóa phiên bản bằng `package-lock.json`. Không dùng npm global. `frontend/.env.example` chỉ chứa cấu hình public/dev proxy; `backend/.env.example` là cấu hình V1, vẫn dùng SQLite cho tới khi triển khai PostgreSQL. File `.env` thật được ignore và không đưa vào frontend build.
+Compose khởi động `db` trước, chờ healthcheck, chạy `migrate` một lần rồi mới mở `backend`, sau đó `frontend`. Migration có ledger/checksum; chạy lại bằng `docker compose run --rm migrate`. Volume `studyforge-postgres` giữ dữ liệu qua lần dừng và build lại. Không có seed tự động.
 
-```powershell
-npm ci
-npm run lint
-npm run typecheck
-npm run build
-```
+Cổng web đổi bằng `STUDYFORGE_HOST_FE_PORT` trong `.env`. Compose inject cấu hình backend lúc chạy; image không chứa mật khẩu. `backend/.env.example` mô tả các biến backend cho môi trường khác, còn `frontend/.env.example` chỉ có cấu hình công khai/proxy. Không copy secrets vào frontend.
 
-`npm test` còn chứa test V1 dựa vào bộ dữ liệu mẫu đã bỏ; bộ test này cần cập nhật theo schema và luồng V2. Trong môi trường Codex hiện tại, các test dùng HTTP loopback còn gặp lỗi `fetch failed`; không diễn giải đó là bằng chứng ứng dụng chạy được hay không chạy được trên máy ngoài sandbox.
+## Dependencies và kiểm tra
 
-**Chưa có quy trình chạy full-stack V2.** Hướng dẫn `npm run dev`, `npm start` và `compose.yaml` hiện vẫn phục vụ mã V1/SQLite, không phải PostgreSQL. Khi thiết kế DB V2 được chốt, sẽ bổ sung migration, biến môi trường, Compose và hướng dẫn chạy thống nhất.
+`backend/package.json` cùng `backend/package-lock.json` khóa `pg` và `@types/pg` cho backend. Root `package.json`/`package-lock.json` quản lý TypeScript dùng cho tooling. Dockerfile backend dùng `npm ci` từ backend lockfile và build bằng Node 22; không cần `npm install -g`. Kiểm tra cú pháp Compose: `docker compose --env-file .env.example config --quiet`. Unit tests V2: `npm run test:v2` nếu dependencies môi trường đã sẵn; kiểm tra đầy đủ phải chạy lại trong Docker khi daemon truy cập được. Các lệnh `dev`, `start`, `db:migrate`, `test` cũ hiện phục vụ V1 và chưa phải quy trình chạy V2.
+
+## Tài liệu
+
+- [Kiến trúc](docs/architecture.md)
+- [Cấu trúc source](docs/project-structure.md)
+- [Database](docs/database.md)
+- [API](docs/api.md)
+- [Tính năng và trạng thái](docs/features.md)
+- [Sẵn sàng DevOps](docs/devops-readiness.md)
+- [Đặc tả sản phẩm V2](docs/StudyForge_V2_Full_Codex_Handoff.md)
+
+Git hiện chỉ ở local. Baseline V1 nằm trong commit đầu tiên; chưa có remote hay GitHub repository.

@@ -1,5 +1,37 @@
-# Cấu hình V1/SQLite để tham khảo; chưa triển khai PostgreSQL cho StudyForge V2.
+name: studyforge
 services:
+  db:
+    image: postgres:17.11-alpine3.23
+    environment:
+      POSTGRES_USER: studyforge
+      POSTGRES_DB: studyforge
+      POSTGRES_PASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+    volumes:
+      - studyforge-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studyforge -d studyforge"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    command: ["node", "scripts/migrate-postgres.mjs"]
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: studyforge
+      PGPASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+      PGDATABASE: studyforge
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   backend:
     build:
       context: .
@@ -7,14 +39,22 @@ services:
     environment:
       NODE_ENV: development
       HOST: 0.0.0.0
-      API_PORT: ${STUDYFORGE_API_PORT:-3001}
-      DATABASE_PATH: /app/data/studyforge.sqlite
+      API_PORT: "3001"
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: studyforge
+      PGPASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+      PGDATABASE: studyforge
       FRONTEND_DIR: /app/empty-public
       ALLOWED_ORIGINS: ${STUDYFORGE_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
       SECURE_COOKIES: "false"
       SESSION_TTL_SECONDS: ${STUDYFORGE_SESSION_TTL_SECONDS:-604800}
-    volumes:
-      - studyforge-data:/app/data
+      MERRIAM_WEBSTER_API_KEY: ${STUDYFORGE_MERRIAM_WEBSTER_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   frontend:
@@ -23,15 +63,15 @@ services:
       dockerfile: infra/docker/frontend.Dockerfile
     environment:
       FE_HOST: 0.0.0.0
-      FE_PORT: ${STUDYFORGE_FE_PORT:-3000}
-      API_PROXY_TARGET: http://backend:${STUDYFORGE_API_PORT:-3001}
+      FE_PORT: "3000"
+      API_PROXY_TARGET: http://backend:3001
       PUBLIC_API_BASE_URL: ""
     ports:
-      - "${STUDYFORGE_HOST_FE_PORT:-3000}:${STUDYFORGE_FE_PORT:-3000}"
+      - "${STUDYFORGE_HOST_FE_PORT:-3000}:3000"
     depends_on:
       backend:
         condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  studyforge-data:
+  studyforge-postgres:

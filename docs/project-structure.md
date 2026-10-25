@@ -1,56 +1,14 @@
 # Cấu trúc project
 
-```text
-StudyForge/
-├── frontend/
-│   ├── src/
-│   │   ├── pages/          # Trang và điều hướng
-│   │   ├── features/       # Luồng tương tác
-│   │   ├── components/     # UI tái sử dụng
-│   │   ├── layouts/        # Header, footer, khung trang
-│   │   ├── services/       # API client
-│   │   ├── core/           # DOM/navigation helpers
-│   │   └── styles/         # Tokens và CSS theo khu vực
-│   ├── public/
-│   ├── .env.example
-│   └── tsconfig.json
-├── backend/
-│   ├── src/
-│   │   ├── modules/
-│   │   │   ├── auth/
-│   │   │   ├── curriculum/
-│   │   │   ├── assessment/
-│   │   │   ├── progress/
-│   │   │   ├── vocabulary/import/
-│   │   │   ├── profile/
-│   │   │   └── support/
-│   │   ├── http/
-│   │   ├── config/
-│   │   ├── infrastructure/database/
-│   │   ├── shared/
-│   │   ├── app.ts
-│   │   └── main.ts
-│   ├── .env.example
-│   └── tsconfig.json
-├── database/migrations/  # Migration V1/SQLite, chưa phải PostgreSQL
-├── packages/contracts/
-├── infra/docker/          # Dockerfile V1, chưa triển khai PostgreSQL
-├── tests/
-├── scripts/
-├── docs/
-├── compose.yaml           # Compose V1/SQLite, chưa triển khai PostgreSQL
-├── package.json
-├── package-lock.json
-├── .env.example
-├── .gitignore
-├── .dockerignore
-└── README.md
-```
+- `frontend/src/pages`: các trang V2 và trang V1 còn giữ để tham khảo. Entry đang dùng là `frontend/src/v2-main.ts`.
+- `frontend/src/components`, `layouts`, `services`, `core`, `styles`: UI dùng chung, shell, HTTP client và design tokens. Frontend không giữ database credentials hay key dictionary.
+- `backend/src/modules`: auth, collections, vocabulary, dictionary, review theo nghiệp vụ. Mỗi module tách controller/service/repository khi có truy cập dữ liệu.
+- `backend/src/http`, `config`, `infrastructure/database`, `shared`: routing, cấu hình, PostgreSQL pool, validation và lỗi. Entry V2 là `backend/src/v2-main.ts`; V1 `main.ts`/`app.ts` còn giữ làm mốc chuyển đổi.
+- `backend/package.json` và `backend/package-lock.json`: dependencies riêng của backend.
+- `database/migrations/postgres`: schema V2 có version; `database/migrations/*.sql` là SQLite V1.
+- `packages/contracts`: TypeScript types FE ↔ BE; hiện có cả V1/V2 để chuyển đổi từng bước.
+- `infra/docker`: Dockerfiles riêng FE/BE. `compose.yaml`: PostgreSQL, migration job, backend, frontend.
+- `scripts`: build, migration và công cụ kiểm tra. `tests`: unit V2 cùng test V1 cần phân loại lại.
+- `.tmp`, `dist`, `node_modules`, `.env`: file sinh/runtime được ignore, không phải source.
 
-Đây là **modular monolith + layered architecture**: một backend triển khai chung, chia theo nghiệp vụ; controller gắn route, service xử lý nghiệp vụ, repository truy vấn dữ liệu. `app.ts` ghép các module. Không cần tạo microservice hoặc package npm riêng cho mỗi thư mục ở giai đoạn này.
-
-Các file V1 được **di chuyển theo trách nhiệm**, chưa viết lại nghiệp vụ: `learning` thành `curriculum`; route quiz và nộp bài chuyển vào controller `assessment`; route dashboard/review vào controller `progress`; bộ import đặt trong `vocabulary/import`. Một số service V1 còn phụ thuộc chéo vì logic cũ gắn với giáo trình/XP; sẽ thiết kế lại sau khi chốt V2. Không tạo các module rỗng chỉ để đủ sơ đồ.
-
-Dữ liệu học mẫu không còn được nạp lúc khởi động. Dữ liệu SQLite runtime cũ và seed nằm trong `.tmp/retired-v1/` (được ignore), chờ xóa thủ công do công cụ xóa bị sandbox từ chối. Không coi đây là database hay seed của V2.
-
-Một `package.json` và `package-lock.json` ở gốc quản lý TypeScript cục bộ. `frontend/tsconfig.json` và `backend/tsconfig.json` tách phạm vi kiểm tra kiểu; script build vẫn giữ đường dẫn từ gốc để các import dùng chung hoạt động.
+Chưa xóa code V1 hàng loạt; sau khi nghiệm thu V2 bằng Docker sẽ loại bỏ theo phase có local commit để rollback.
