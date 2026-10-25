@@ -1,18 +1,20 @@
-# Legacy V1 frontend image; V2 Compose has not been validated.
-FROM node:22.23.4-bookworm-slim AS build
+# syntax=docker/dockerfile:1.7
+FROM node:22.23.4-bookworm-slim AS frontend-build
 WORKDIR /app
 COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
 COPY scripts/build.mjs scripts/paths.mjs scripts/frontend-config.mjs ./scripts/
-COPY frontend/index.html frontend/.env.example ./frontend/
+COPY frontend/index.html frontend/.env.example frontend/tsconfig.json ./frontend/
 COPY frontend/src ./frontend/src
 COPY frontend/public ./frontend/public
-# The sample contains public settings only; the real frontend/.env never enters the build context.
+COPY packages ./packages
+RUN node node_modules/typescript/lib/tsc.js --project frontend/tsconfig.json
 RUN cp frontend/.env.example frontend/.env && node scripts/build.mjs --frontend-only
 
 FROM node:22.23.4-bookworm-slim
 WORKDIR /app
 ENV FE_HOST=0.0.0.0 FE_PORT=3000 API_PROXY_TARGET=http://backend:3001 PUBLIC_API_BASE_URL=
-COPY --from=build /app/dist/frontend ./dist/frontend
+COPY --from=frontend-build /app/dist/frontend ./dist/frontend
 COPY scripts/paths.mjs scripts/frontend-config.mjs scripts/frontend-server.mjs ./scripts/
 COPY package.json ./
 USER node

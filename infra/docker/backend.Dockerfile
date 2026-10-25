@@ -6,10 +6,16 @@ RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --ignore-scripts
 
 FROM node:22.23.4-bookworm-slim AS backend-build
 WORKDIR /app
-COPY package.json ./
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
+COPY backend/package.json backend/package-lock.json ./backend/
+RUN --mount=type=cache,target=/root/.npm npm ci --prefix backend --ignore-scripts
 COPY scripts/build.mjs scripts/paths.mjs scripts/frontend-config.mjs ./scripts/
 COPY backend/src ./backend/src
+COPY backend/tsconfig.json ./backend/tsconfig.json
 COPY packages ./packages
+COPY tests ./tests
+RUN node node_modules/typescript/lib/tsc.js --project backend/tsconfig.json
 RUN node scripts/build.mjs --backend-only
 
 FROM node:22.23.4-bookworm-slim
