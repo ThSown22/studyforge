@@ -15,6 +15,7 @@ RUN node scripts/build.mjs --backend-only
 FROM node:22.23.4-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production HOST=0.0.0.0 API_PORT=3001 FRONTEND_DIR=/app/empty-public
+COPY package.json ./package.json
 COPY --from=backend-dependencies /app/node_modules ./node_modules
 COPY --from=backend-build /app/dist/backend ./dist/backend
 COPY --from=backend-build /app/dist/packages ./dist/packages
