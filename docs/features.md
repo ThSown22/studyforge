@@ -4,7 +4,7 @@
 | --- | --- |
 | Auth bằng email/mật khẩu, cookie phiên | Đã viết cho PostgreSQL; chưa thử end-to-end trong container |
 | Tạo, đổi tên, xóa bộ sưu tập rỗng | Đã viết FE/BE/DB; chưa thử end-to-end |
-| Lưu từ không trùng, một bộ sưu tập, ba trạng thái | Đã viết FE/BE/DB; unit test quy tắc đã qua; chưa thử end-to-end |
+| Lưu từ qua Tra từ hoặc nhập thủ công, không trùng, một bộ sưu tập, ba trạng thái | Đã viết FE/BE/DB; unit test quy tắc đã qua; chưa thử end-to-end |
 | Tra từ EN, đầy đủ POS/định nghĩa/ví dụ từ provider | Adapter/parser và giao diện đã viết; cần key và thử với API thật |
 | Audio và Word Family | Giao diện/adapter đã viết; chưa thử với phản hồi thực tế |
 | Ôn tự đánh giá, review event | Đã viết FE/BE/DB; cần thử trong container và key dictionary để lật thẻ |

@@ -4,7 +4,7 @@ StudyForge là ứng dụng học từ vựng tiếng Anh cá nhân: tra từ, l
 
 ## Trạng thái hiện tại
 
-Mã V2 đã có API auth, collections, saved words, dictionary adapter và review events; giao diện web có Trang chủ, Kho từ, Tra từ và lượt ôn tự đánh giá. **Build và luồng end-to-end trong Docker chưa được xác nhận trong phiên Codex này** vì Docker daemon không cho phiên truy cập. Từ điển cần Merriam-Webster Learner's API key. Khi không có key, tra từ và phần lật thẻ cần định nghĩa trả lỗi rõ ràng; ứng dụng không giả lập nghĩa. Bản dịch từng sense tiếng Việt và Chrome Extension chưa hoàn thành.
+Mã V2 đã có API auth, collections, saved words, dictionary adapter và review events; giao diện web có Trang chủ, Kho từ, Tra từ, nhập từ thủ công và lượt ôn tự đánh giá. **Build và luồng end-to-end trong Docker chưa được xác nhận trong phiên Codex này** vì Docker daemon không cho phiên truy cập. Từ điển cần Merriam-Webster Learner's API key. Khi không có key, tra từ và phần lật thẻ cần định nghĩa trả lỗi rõ ràng; ứng dụng không giả lập nghĩa. Bản dịch từng sense tiếng Việt và Chrome Extension chưa hoàn thành.
 
 ## Chạy local bằng Docker Compose
 

@@ -6,7 +6,7 @@ import { renderDictionaryResult } from '../components/dictionary-result.ts';
 const statusLabel: Record<LearningStatus,string>={new:'Chưa học',learning:'Đang học',known:'Đã nhớ'};
 export function renderVocabularyPage(user: User | null, signal: AbortSignal): HTMLElement {
   const root=el(`<div class="page-container v2-page"><div class="v2-page-head"><div><p class="v2-overline">THƯ VIỆN CỦA RIÊNG BẠN</p><h1>Kho từ vựng của tôi</h1><p>Những từ bạn gặp, chọn lưu và học theo nhịp riêng.</p></div><a class="btn btn-primary" data-route href="/dictionary">＋ Thêm từ mới</a></div>
-    <div class="v2-stats"></div><section class="panel v2-vault"><div class="v2-vault-head"><div><h2>Thư viện của bạn</h2><p class="muted">Tìm, sắp xếp và tự đánh dấu mức độ ghi nhớ.</p></div><a href="/vocabulary/review" data-route class="btn btn-outline">Ôn tập từ hôm nay →</a></div>
+    <div class="v2-stats"></div><section class="panel v2-vault"><div class="v2-vault-head"><div><h2>Thư viện của bạn</h2><p class="muted">Tìm, sắp xếp và tự đánh dấu mức độ ghi nhớ.</p></div><div class="v2-vault-actions"><button type="button" class="btn btn-outline" data-add-word>＋ Lưu từ thủ công</button><a href="/vocabulary/review" data-route class="btn btn-outline">Ôn tập từ hôm nay →</a></div></div>
     <div class="v2-tabs" role="group" aria-label="Lọc từ"><button type="button" data-status="all">Tất cả</button><button type="button" data-status="new">Chưa học</button><button type="button" data-status="learning">Đang học</button><button type="button" data-status="known">Đã nhớ</button></div>
     <div class="v2-toolbar"><label><span>Tìm từ</span><input type="search" name="q" placeholder="Tìm từ đã lưu…"></label><label><span>Bộ sưu tập</span><select name="collection"><option value="">Tất cả bộ sưu tập</option></select></label></div>
     <div class="v2-collection-bar"><h3>Bộ sưu tập</h3><button type="button" class="btn btn-outline" data-create>＋ Tạo bộ</button></div><div class="v2-collections"></div>
@@ -67,7 +67,19 @@ export function renderVocabularyPage(user: User | null, signal: AbortSignal): HT
   root.querySelector('.v2-tabs')!.addEventListener('click',event=>{const value=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-status]')?.dataset.status;if(value&&['all','new','learning','known'].includes(value)){status=value as typeof status;paintList();}},{signal});
   listSlot.addEventListener('click',event=>{const id=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-word]')?.dataset.word;const word=words.find(item=>item.id===id);if(word)void showWord(word);},{signal});
   collectionSelect.addEventListener('change',paintList,{signal});search.addEventListener('input',paintList,{signal});
-  root.querySelector('[data-create]')!.addEventListener('click',()=>{
+  root.querySelector('[data-add-word]')!.addEventListener('click',()=>{
+    if(!collections.length){toast('Hãy tạo một bộ sưu tập trước.','error');return;}
+    root.querySelector('.v2-manual-save')?.remove();
+    const form=el(`<form class="panel v2-inline-form v2-manual-save"><label>Từ cần lưu<input name="term" required maxlength="255" placeholder="Từ hoặc cụm từ tiếng Anh"></label><label>Bộ sưu tập<select name="collectionId" required>${collections.map(item=>`<option value="${e(item.id)}">${e(item.name)}</option>`).join('')}</select></label><button class="btn btn-primary" type="submit">Lưu từ</button><button class="btn btn-outline" type="button" data-cancel>Hủy</button></form>`);
+    root.querySelector('.v2-vault-head')!.after(form);
+    form.querySelector('[data-cancel]')!.addEventListener('click',()=>form.remove());
+    form.addEventListener('submit',async event=>{
+      event.preventDefault();const values=Object.fromEntries(new FormData(form as HTMLFormElement));
+      try{const result=await api<{created:boolean}>('/api/words',{method:'POST',body:JSON.stringify(values)});toast(result.created?'Đã lưu từ vào Kho từ.':'Từ này đã có trong Kho từ.');form.remove();await load();}
+      catch(error){toast((error as Error).message,'error');}
+    });
+    form.querySelector('input')?.focus();
+  },{signal});  root.querySelector('[data-create]')!.addEventListener('click',()=>{
     const panel=el('<form class="panel v2-inline-form"><label>Tên bộ sưu tập<input name="name" required maxlength="100" placeholder="Ví dụ: IT & DevOps"></label><label>Mô tả (không bắt buộc)<input name="description" maxlength="1000"></label><button class="btn btn-primary" type="submit">Tạo bộ</button><button class="btn btn-outline" type="button" data-cancel>Hủy</button></form>');
     root.querySelector('.v2-collection-bar')!.after(panel);panel.querySelector('[data-cancel]')!.addEventListener('click',()=>panel.remove());
     panel.addEventListener('submit',async event=>{event.preventDefault();const form=panel as HTMLFormElement;const values=Object.fromEntries(new FormData(form));try{await api('/api/collections',{method:'POST',body:JSON.stringify(values)});panel.remove();toast('Đã tạo bộ sưu tập.');await load();}catch(error){toast((error as Error).message,'error');}});
