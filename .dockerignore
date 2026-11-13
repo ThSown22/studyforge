@@ -8,4 +8,5 @@ tmp
 **/.env.*
 !**/.env.example
 coverage
+backups
 *.log

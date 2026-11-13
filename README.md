@@ -37,6 +37,8 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm run typecheck` | TypeScript strict check |
 | `npm run build` | Build local vào `dist/` (artefact, Git ignore) |
 | `npm run db:migrate` | Chạy migration container |
+| `npm run db:backup` | Tạo logical backup PostgreSQL dạng custom archive trong `backups/postgres/` |
+| `npm run db:backup:verify` | Restore backup mới nhất vào database tạm, đối chiếu số dòng rồi tự xóa database tạm |
 | `npm run compose:up` | Build và chạy stack |
 | `npm run compose:down` | Dừng stack, giữ volume |
 | `npm run quality:docker` | Chạy lint, typecheck, unit tests và production build trong QA container |
@@ -44,6 +46,8 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm run qa` | Chạy quality gate rồi chạy Compose smoke test |
 
 `backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Quality container không ghi `node_modules` ra máy Windows. Ngày 13/11/2026, QA Docker đã xác nhận lint, typecheck, 19 unit tests, production build, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ và review. Merriam-Webster API thật và các luồng trình duyệt cốt lõi cũng đã được xác minh. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
+
+Backup nằm ngoài Git và Docker build context. Lệnh verify không restore đè database `studyforge`: nó tạo một database tạm trong PostgreSQL container, restore và đối chiếu dữ liệu, sau đó xóa database tạm kể cả khi kiểm tra thất bại. Sao chép file `.dump` sang nơi lưu trữ an toàn; thư mục local `backups/` không phải chiến lược lưu trữ dài hạn.
 
 ## Cấu hình
 
