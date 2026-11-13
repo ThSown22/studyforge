@@ -1,5 +1,5 @@
 import type { Router } from '../../http/router.ts';
-import type { V2AuthService } from '../auth/auth-v2.service.ts';
+import type { AuthService } from '../auth/auth.service.ts';
 import type { VocabularyService } from './vocabulary.service.ts';
 import { HttpError } from '../../shared/errors.ts';
 
@@ -7,7 +7,7 @@ const uuid = (value: string) => {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) throw new HttpError(400, 'INVALID_ID', 'ID không hợp lệ.');
   return value;
 };
-export function vocabularyRoutes(router: Router, auth: V2AuthService, vocabulary: VocabularyService) {
+export function vocabularyRoutes(router: Router, auth: AuthService, vocabulary: VocabularyService) {
   router.on('GET', '/api/words', async ({ request }) => {
     const user = await auth.requireUser(request);
     const query = new URL(request.url ?? '/', 'http://studyforge.local').searchParams;

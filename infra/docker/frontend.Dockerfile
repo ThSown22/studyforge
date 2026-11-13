@@ -4,12 +4,12 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
 COPY scripts/build.mjs scripts/paths.mjs scripts/frontend-config.mjs ./scripts/
-COPY frontend/index.html frontend/.env.example frontend/tsconfig.json ./frontend/
+COPY frontend/index.html frontend/tsconfig.json ./frontend/
 COPY frontend/src ./frontend/src
 COPY frontend/public ./frontend/public
 COPY packages ./packages
 RUN node node_modules/typescript/lib/tsc.js --project frontend/tsconfig.json
-RUN cp frontend/.env.example frontend/.env && node scripts/build.mjs --frontend-only
+RUN node scripts/build.mjs --frontend-only
 
 FROM node:22.23.4-bookworm-slim
 WORKDIR /app

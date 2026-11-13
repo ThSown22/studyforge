@@ -1,23 +1,31 @@
-import type { DatabaseSync } from 'node:sqlite';
+import type { Pool } from 'pg';
 import type { User } from '../../../../packages/contracts/src/index.ts';
 
-export interface UserRow { id: string; name: string; email: string; password_hash: string; xp: number; created_at: string }
+export interface UserRow { id: string; email: string; display_name: string; created_at: Date; password_hash: string }
 export function publicUser(row: UserRow): User {
-  return { id: row.id, name: row.name, email: row.email, xp: row.xp, createdAt: row.created_at };
+  return { id: row.id, email: row.email, name: row.display_name, xp: 0, createdAt: row.created_at.toISOString() };
 }
-export class AuthRepository {
-  db: DatabaseSync;
-  constructor(db: DatabaseSync) { this.db = db; }
-  byEmail(email: string) { return this.db.prepare('SELECT * FROM users WHERE email = ?').get(email) as unknown as UserRow | undefined; }
-  byId(id: string) { return this.db.prepare('SELECT * FROM users WHERE id = ?').get(id) as unknown as UserRow | undefined; }
-  insert(row: UserRow) { this.db.prepare('INSERT INTO users(id,name,email,password_hash,xp,created_at) VALUES(?,?,?,?,?,?)').run(row.id, row.name, row.email, row.password_hash, row.xp, row.created_at); }
-  createSession(hash: string, userId: string, expires: number) {
-    this.db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(Date.now());
-    this.db.prepare('INSERT INTO sessions(token_hash,user_id,expires_at,created_at) VALUES(?,?,?,?)').run(hash, userId, expires, new Date().toISOString());
+export class PostgresAuthRepository {
+  private readonly db: Pool;
+  constructor(db: Pool) { this.db = db; }
+  async byEmail(email: string) {
+    const result = await this.db.query<UserRow>('SELECT id,email,display_name,created_at,password_hash FROM users WHERE email_normalized=$1 AND is_active=true', [email]);
+    return result.rows[0] ?? null;
   }
-  sessionUser(hash: string) {
-    return this.db.prepare('SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ? AND s.expires_at > ?').get(hash, Date.now()) as unknown as UserRow | undefined;
+  async insert(name: string, email: string, passwordHash: string) {
+    const result = await this.db.query<UserRow>(`INSERT INTO users(email,email_normalized,display_name,password_hash)
+      VALUES($1,$2,$3,$4) RETURNING id,email,display_name,created_at,password_hash`, [email,email,name,passwordHash]);
+    return result.rows[0];
   }
-  deleteSession(hash: string) { this.db.prepare('DELETE FROM sessions WHERE token_hash = ?').run(hash); }
-  updateName(id: string, name: string) { this.db.prepare('UPDATE users SET name = ? WHERE id = ?').run(name, id); }
+  async createSession(hash: string, userId: string, expiresAt: Date) {
+    await this.db.query('INSERT INTO auth_sessions(user_id,token_hash,expires_at) VALUES($1,$2,$3)', [userId,hash,expiresAt]);
+  }
+  async sessionUser(hash: string) {
+    const result = await this.db.query<UserRow>(`SELECT u.id,u.email,u.display_name,u.created_at,u.password_hash FROM auth_sessions s
+      JOIN users u ON u.id=s.user_id WHERE s.token_hash=$1 AND s.expires_at>now() AND s.revoked_at IS NULL AND u.is_active=true`, [hash]);
+    return result.rows[0] ?? null;
+  }
+  async revokeSession(hash: string) {
+    await this.db.query('UPDATE auth_sessions SET revoked_at=now() WHERE token_hash=$1 AND revoked_at IS NULL', [hash]);
+  }
 }

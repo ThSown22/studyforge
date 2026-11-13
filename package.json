@@ -12,22 +12,15 @@
     "typescript": "6.0.3"
   },
   "scripts": {
-    "dev": "node scripts/dev.mjs",
-    "dev:backend": "node --env-file-if-exists=backend/.env --watch --experimental-strip-types backend/src/main.ts",
-    "dev:frontend": "node --env-file-if-exists=frontend/.env scripts/frontend-server.mjs",
     "build": "node scripts/build.mjs",
-    "start": "node --env-file-if-exists=backend/.env scripts/start.mjs",
-    "db:migrate": "node --env-file-if-exists=backend/.env --experimental-strip-types backend/src/infrastructure/database/cli.ts migrate",
-    "db:migrate:v2": "docker compose run --rm migrate",
-    "import:vocabulary": "node --env-file-if-exists=backend/.env --experimental-strip-types backend/src/modules/vocabulary/import/cli.ts",
-    "test": "node scripts/test.mjs",
+    "test": "node --experimental-strip-types --test tests/dictionary-parser.test.ts tests/dictionary-client.test.ts tests/v2-business.test.ts scripts/frontend-config.test.mjs",
     "lint": "node scripts/check.mjs",
     "format:check": "node scripts/check.mjs --format-only",
     "typecheck": "node scripts/typecheck.mjs",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
-    "test:v2": "node --experimental-strip-types --test tests/dictionary-parser.test.ts tests/dictionary-client.test.ts tests/v2-business.test.ts",
+    "db:migrate": "docker compose run --rm migrate",
     "compose:up": "docker compose up --build -d",
     "compose:down": "docker compose down",
-    "smoke:v2": "docker compose --profile qa run --rm smoke"
+    "smoke": "docker compose --profile qa run --build --rm smoke"
   }
 }

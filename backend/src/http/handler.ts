@@ -21,7 +21,6 @@ export function createRequestHandler(router: Router, options: HandlerOptions) {
         const ip = request.socket.remoteAddress ?? 'unknown';
         limiter.check(`${ip}:all`, 1000, 15 * 60 * 1000, response);
         if (request.method === 'POST' && ['/api/auth/login', '/api/auth/register'].includes(path)) limiter.check(`${ip}:auth`, 30, 15 * 60 * 1000, response);
-        if (request.method === 'POST' && path === '/api/support') limiter.check(`${ip}:support`, 10, 60 * 60 * 1000, response);
         const body = await readJson(request);
         if (await router.handle(request, response, path, body)) return;
         throw new HttpError(404, 'NOT_FOUND', 'API không tồn tại.');
