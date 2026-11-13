@@ -1,10 +1,14 @@
-.btn { display: inline-flex; justify-content: center; align-items: center; gap: 14px; border: 1px solid transparent; border-radius: var(--radius-control); padding: 15px 24px; min-height: 49px; font-size: 13px; font-weight: 800; line-height: 1.4; transition: background .18s, transform .18s; }
-.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn { display: inline-flex; justify-content: center; align-items: center; gap: 10px; border: 1px solid transparent; border-radius: var(--radius-control); padding: 13px 20px; min-height: 46px; font-size: 13px; font-weight: 760; line-height: 1.35; transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
+.btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 7px 18px rgba(25,75,74,.1); }
 .btn-primary { background: var(--ink); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: #006566; }
+.btn-primary:hover:not(:disabled) { background: #245f5d; }
 .btn-primary span { color: #39d1c2; }
 .btn-outline { border-color: var(--ink); background: white; }
-.btn-outline:hover:not(:disabled) { background: #ecf8f5; }
+.btn-outline:hover:not(:disabled) { background: #eef8f5; border-color: var(--teal-deep); }
+.btn-soft { background: #e8f5f1; color: var(--ink); }
+.btn-soft:hover:not(:disabled) { background: #d9eee8; }
+.btn-ghost { min-height: 42px; padding-inline: 14px; color: var(--muted); }
+.btn-ghost:hover:not(:disabled) { color: var(--ink); background: #edf5f2; box-shadow: none; }
 .btn-white { background: #fff; color: var(--ink); border-radius: 40px; white-space: nowrap; padding: 15px 22px; }
 .btn-white span { color: var(--coral); }
 .btn:disabled { opacity: .5; transform: none; }
@@ -24,6 +28,7 @@
 .auth-tabs > button { width: 50%; padding: 11px; font-size: 13px; font-weight: 750; border-radius: 8px; }
 .auth-tabs > button.active { background: #fff; box-shadow: 0 2px 5px #004b4c12; }
 .auth-form .btn { margin-top: 22px; }
+.auth-form label + label { margin-top: 17px; }
 .form-error { color: #b33838; background: #fff1ef; border: 1px solid #f5cfca; padding: 11px 13px; border-radius: 9px; font-size: 12px; margin: 16px 0 0; }
 .form-hint { font-size: 11px; color: #71837a; margin: 8px 0 0; }
 .auth-note { font-size: 11px; text-align: center; color: var(--muted); margin: 22px 0 0; }
