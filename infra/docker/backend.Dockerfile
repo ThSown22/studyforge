@@ -1,4 +1,20 @@
 # syntax=docker/dockerfile:1.7
+FROM node:22.23.4-bookworm-slim AS quality
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
+COPY backend/package.json backend/package-lock.json ./backend/
+RUN --mount=type=cache,target=/root/.npm npm ci --prefix backend --ignore-scripts
+COPY frontend/index.html frontend/tsconfig.json ./frontend/
+COPY frontend/src ./frontend/src
+COPY frontend/public ./frontend/public
+COPY backend/src ./backend/src
+COPY backend/tsconfig.json ./backend/tsconfig.json
+COPY packages ./packages
+COPY scripts ./scripts
+COPY tests ./tests
+CMD ["npm", "run", "check"]
+
 FROM node:22.23.4-bookworm-slim AS backend-dependencies
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./

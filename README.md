@@ -39,9 +39,11 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm run db:migrate` | Chạy migration container |
 | `npm run compose:up` | Build và chạy stack |
 | `npm run compose:down` | Dừng stack, giữ volume |
+| `npm run quality:docker` | Chạy lint, typecheck, unit tests và production build trong QA container |
 | `npm run smoke` | Build và chạy smoke test qua Compose |
+| `npm run qa` | Chạy quality gate rồi chạy Compose smoke test |
 
-`backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Ngày 25/10/2026, lệnh `docker compose --profile qa run --build --rm smoke` đã xác nhận proxy, PostgreSQL, auth, collections, chống lưu trùng, trạng thái và review.
+`backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Quality container không ghi `node_modules` ra máy Windows. Ngày 13/11/2026, QA Docker đã xác nhận lint, typecheck, 15 unit tests, production build, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ và review. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
 
 ## Cấu hình
 

@@ -10,6 +10,7 @@ export async function sourceFiles(directory) {
   try { entries = await readdir(directory, { withFileTypes: true }); }
   catch (error) { if (error.code === 'ENOENT') return []; throw error; }
   const nested = await Promise.all(entries.map(async (entry) => {
+    if (entry.isDirectory() && ['node_modules', 'dist', '.git', '.cache', '.tmp', 'tmp', 'coverage'].includes(entry.name)) return [];
     const path = resolve(directory, entry.name);
     return entry.isDirectory() ? sourceFiles(path) : [path];
   }));

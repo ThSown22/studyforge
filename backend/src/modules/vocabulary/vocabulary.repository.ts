@@ -41,15 +41,18 @@ export class PostgresVocabularyRepository implements VocabularyRepository {
     finally { db.release(); }
   }
   async move(userId: string, id: string, collectionId: string) {
-    const result = await this.db.query<WordRow>(`WITH moved AS (UPDATE saved_words sw SET collection_id=$3,updated_at=now()
-      WHERE sw.user_id=$1 AND sw.id=$2 AND EXISTS(SELECT 1 FROM collections WHERE user_id=$1 AND id=$3)
-      RETURNING sw.id) ${selected} WHERE sw.id=(SELECT id FROM moved)`, [userId,id,collectionId]);
+    const result = await this.db.query<WordRow>(`UPDATE saved_words sw SET collection_id=$3,updated_at=now()
+      FROM lexemes l,collections c WHERE sw.user_id=$1 AND sw.id=$2 AND l.id=sw.lexeme_id
+      AND c.user_id=$1 AND c.id=$3
+      RETURNING sw.id,l.term,sw.collection_id,c.name AS collection_name,sw.status,sw.saved_at,sw.personal_note`, [userId,id,collectionId]);
     return result.rows[0] ? summary(result.rows[0]) : null;
   }
   async setStatus(userId: string, id: string, status: LearningStatus) {
-    const result = await this.db.query<WordRow>(`WITH changed AS (UPDATE saved_words sw SET status=$3::learning_status,
+    const result = await this.db.query<WordRow>(`UPDATE saved_words sw SET status=$3::learning_status,
       status_changed_at=CASE WHEN status<>$3::learning_status THEN now() ELSE status_changed_at END,updated_at=now()
-      WHERE sw.user_id=$1 AND sw.id=$2 RETURNING sw.id) ${selected} WHERE sw.id=(SELECT id FROM changed)`, [userId,id,status]);
+      FROM lexemes l,collections c WHERE sw.user_id=$1 AND sw.id=$2 AND l.id=sw.lexeme_id
+      AND c.user_id=sw.user_id AND c.id=sw.collection_id
+      RETURNING sw.id,l.term,sw.collection_id,c.name AS collection_name,sw.status,sw.saved_at,sw.personal_note`, [userId,id,status]);
     return result.rows[0] ? summary(result.rows[0]) : null;
   }
   async stats(userId: string): Promise<VocabularyStats> {

@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --experimental-strip-types --test tests/dictionary-parser.test.ts tests/dictionary-client.test.ts tests/v2-business.test.ts scripts/frontend-config.test.mjs",
+    "test": "node --experimental-strip-types --test tests/dictionary-parser.test.ts tests/dictionary-client.test.ts tests/postgres-resilience.test.ts tests/v2-business.test.ts scripts/frontend-config.test.mjs",
     "lint": "node scripts/check.mjs",
     "format:check": "node scripts/check.mjs --format-only",
     "typecheck": "node scripts/typecheck.mjs",
@@ -21,6 +21,8 @@
     "db:migrate": "docker compose run --rm migrate",
     "compose:up": "docker compose up --build -d",
     "compose:down": "docker compose down",
-    "smoke": "docker compose --profile qa run --build --rm smoke"
+    "quality:docker": "docker compose --profile qa run --build --rm quality",
+    "smoke": "docker compose --profile qa run --build --rm smoke",
+    "qa": "npm run quality:docker && npm run smoke"
   }
 }

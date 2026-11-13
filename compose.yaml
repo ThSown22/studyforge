@@ -91,5 +91,13 @@ services:
       frontend:
         condition: service_healthy
     restart: "no"
+
+  quality:
+    profiles: ["qa"]
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+      target: quality
+    restart: "no"
 volumes:
   studyforge-postgres:
