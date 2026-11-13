@@ -43,7 +43,7 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm run smoke` | Build và chạy smoke test qua Compose |
 | `npm run qa` | Chạy quality gate rồi chạy Compose smoke test |
 
-`backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Quality container không ghi `node_modules` ra máy Windows. Ngày 13/11/2026, QA Docker đã xác nhận lint, typecheck, 15 unit tests, production build, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ và review. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
+`backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Quality container không ghi `node_modules` ra máy Windows. Ngày 13/11/2026, QA Docker đã xác nhận lint, typecheck, 19 unit tests, production build, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ và review. Merriam-Webster API thật và các luồng trình duyệt cốt lõi cũng đã được xác minh. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
 
 ## Cấu hình
 
