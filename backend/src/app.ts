@@ -17,7 +17,7 @@ import { vocabularyRoutes } from './modules/vocabulary/vocabulary.controller.ts'
 import { DictionaryService } from './modules/dictionary/dictionary.service.ts';
 import { MerriamClient } from './modules/dictionary/merriam.client.ts';
 import { dictionaryRoutes } from './modules/dictionary/dictionary.controller.ts';
-import { createTranslationProvider } from './modules/dictionary/translation.provider.ts';
+import { DeepLTranslationClient } from './modules/dictionary/translation.provider.ts';
 import { ReviewService } from './modules/review/review.service.ts';
 import { reviewRoutes } from './modules/review/review.controller.ts';
 
@@ -28,7 +28,7 @@ export function createApp() : App {
   const auth = new AuthService(new PostgresAuthRepository(db),config.secureCookies,config.sessionTtlSeconds);
   const collections = new CollectionsService(new PostgresCollectionRepository(db));
   const vocabulary = new VocabularyService(new PostgresVocabularyRepository(db));
-  const dictionary = new DictionaryService(new MerriamClient(),new PostgresVocabularyRepository(db),createTranslationProvider());
+  const dictionary = new DictionaryService(new MerriamClient(),new PostgresVocabularyRepository(db),new DeepLTranslationClient());
   const router = new Router();
   router.on('GET','/api/health',async () => {
     await db.query('SELECT 1');

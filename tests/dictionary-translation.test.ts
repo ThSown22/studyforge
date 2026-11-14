@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { DictionaryResult } from '../packages/contracts/src/index.ts';
 import { DictionaryService } from '../backend/src/modules/dictionary/dictionary.service.ts';
-import { DeepLTranslationClient, GoogleTranslationClient } from '../backend/src/modules/dictionary/translation.provider.ts';
+import { DeepLTranslationClient } from '../backend/src/modules/dictionary/translation.provider.ts';
 
 function dictionaryResult(): DictionaryResult {
   return {
@@ -20,28 +20,6 @@ function dictionaryResult(): DictionaryResult {
     }],
   };
 }
-
-test('Google translation adapter sends a server-side batch and returns translations in provider order', async () => {
-  let requestedUrl = '';
-  let requestedBody: unknown;
-  const request: typeof fetch = async (input, init) => {
-    requestedUrl = String(input);
-    requestedBody = JSON.parse(String(init?.body));
-    return new Response(JSON.stringify({ data: { translations: [
-      { translatedText: 'học cẩn thận' }, { translatedText: 'xem xét kỹ' },
-    ] } }), { status: 200, headers: { 'content-type': 'application/json' } });
-  };
-  const client = new GoogleTranslationClient('translation-test-key', request);
-  const translated = await client.translateEnglishToVietnamese(['learn carefully', 'look at closely']);
-
-  assert.deepEqual(translated, ['học cẩn thận', 'xem xét kỹ']);
-  assert.equal(new URL(requestedUrl).origin, 'https://translation.googleapis.com');
-  assert.equal(new URL(requestedUrl).searchParams.get('key'), 'translation-test-key');
-  assert.deepEqual(requestedBody, {
-    q: ['learn carefully', 'look at closely'], source: 'en', target: 'vi', format: 'text',
-  });
-  assert.equal(JSON.stringify(translated).includes('translation-test-key'), false);
-});
 
 test('DeepL translation adapter sends a protected EN to VI batch in provider order', async () => {
   let requestedUrl = '';
@@ -92,30 +70,23 @@ test('unconfigured translation fails before making a dictionary provider request
   const service = new DictionaryService(
     { lookup: async () => { dictionaryRequests++; return dictionaryResult(); } },
     { byTerm: async () => null },
-    new GoogleTranslationClient(''),
+    new DeepLTranslationClient(''),
   );
   await assert.rejects(service.lookup('study', undefined, 'vi'), { code: 'TRANSLATION_NOT_CONFIGURED' });
   assert.equal(dictionaryRequests, 0);
 });
 
-test('translation errors distinguish missing configuration, rate limits and malformed responses', async () => {
-  await assert.rejects(new GoogleTranslationClient('').translateEnglishToVietnamese(['study']), {
+test('DeepL translation errors distinguish missing configuration, invalid keys, rate limits, exhausted quota and malformed responses', async () => {
+  await assert.rejects(new DeepLTranslationClient('').translateEnglishToVietnamese(['study']), {
     code: 'TRANSLATION_NOT_CONFIGURED',
   });
-  const limited: typeof fetch = async () => new Response('', { status: 429 });
-  await assert.rejects(new GoogleTranslationClient('key', limited).translateEnglishToVietnamese(['study']), {
-    code: 'TRANSLATION_RATE_LIMITED',
-  });
-  const malformed: typeof fetch = async () => new Response(JSON.stringify({ data: { translations: [] } }));
-  await assert.rejects(new GoogleTranslationClient('key', malformed).translateEnglishToVietnamese(['study']), {
-    code: 'TRANSLATION_FORMAT_UNSUPPORTED',
-  });
-});
-
-test('DeepL translation errors distinguish invalid keys, exhausted quota and malformed responses', async () => {
   const invalid: typeof fetch = async () => new Response('', { status: 403 });
   await assert.rejects(new DeepLTranslationClient('key', invalid).translateEnglishToVietnamese(['study']), {
     code: 'TRANSLATION_NOT_CONFIGURED',
+  });
+  const limited: typeof fetch = async () => new Response('', { status: 429 });
+  await assert.rejects(new DeepLTranslationClient('key', limited).translateEnglishToVietnamese(['study']), {
+    code: 'TRANSLATION_RATE_LIMITED',
   });
   const exhausted: typeof fetch = async () => new Response('', { status: 456 });
   await assert.rejects(new DeepLTranslationClient('key', exhausted).translateEnglishToVietnamese(['study']), {
