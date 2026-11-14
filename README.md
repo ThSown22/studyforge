@@ -16,7 +16,7 @@ Yêu cầu Docker Desktop với Linux containers. Không cần cài PostgreSQL h
 1. Sao chép `.env.example` thành `.env` ở thư mục gốc.
 2. Đổi `STUDYFORGE_DB_PASSWORD` thành mật khẩu dài, ngẫu nhiên.
 3. Nếu có quyền sử dụng Merriam-Webster Learner's API, điền `STUDYFORGE_MERRIAM_WEBSTER_API_KEY`.
-4. Nếu muốn bật nghĩa tiếng Việt, bật Cloud Translation API trong Google Cloud rồi điền `STUDYFORGE_GOOGLE_TRANSLATE_API_KEY`. Hai key chỉ đi vào backend; không đặt key trong frontend.
+4. Để bật nghĩa tiếng Việt cho bản demo, đăng ký DeepL Developer miễn phí rồi điền `STUDYFORGE_DEEPL_API_KEY`. Không đặt key trong frontend. Google Cloud Translation vẫn được hỗ trợ làm phương án dự phòng nếu để DeepL trống.
 5. Chạy:
 
 ```powershell
@@ -46,7 +46,7 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm run smoke` | Build và chạy smoke test qua Compose |
 | `npm run qa` | Chạy quality gate rồi chạy Compose smoke test |
 
-`backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Quality container không ghi `node_modules` ra máy Windows. Ngày 14/11/2026, QA Docker đã xác nhận lint, typecheck, 23 unit tests, production build, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ và review. Merriam-Webster API thật và các luồng trình duyệt cốt lõi cũng đã được xác minh. Adapter Google Translation đã qua test giả lập; gọi dịch thật vẫn cần key hợp lệ. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
+`backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Quality container không ghi `node_modules` ra máy Windows. Ngày 14/11/2026, QA Docker đã xác nhận lint, typecheck, unit tests, production build, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ và review. Merriam-Webster API thật và các luồng trình duyệt cốt lõi cũng đã được xác minh. Adapter DeepL/Google Translation có test giả lập; gọi dịch thật vẫn cần một key hợp lệ. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
 
 Backup nằm ngoài Git và Docker build context. Lệnh verify không restore đè database `studyforge`: nó tạo một database tạm trong PostgreSQL container, restore và đối chiếu dữ liệu, sau đó xóa database tạm kể cả khi kiểm tra thất bại. Sao chép file `.dump` sang nơi lưu trữ an toàn; thư mục local `backups/` không phải chiến lược lưu trữ dài hạn.
 
@@ -59,9 +59,10 @@ Chỉ commit `.env.example`; không commit `.env`. Các biến chính:
 - `STUDYFORGE_ALLOWED_ORIGINS`: danh sách origin được backend chấp nhận.
 - `STUDYFORGE_SESSION_TTL_SECONDS`: thời hạn session.
 - `STUDYFORGE_MERRIAM_WEBSTER_API_KEY`: key tùy chọn, server-side.
-- `STUDYFORGE_GOOGLE_TRANSLATE_API_KEY`: key Google Cloud Translation Basic tùy chọn, server-side; chỉ được gọi khi người dùng bấm `VI`.
+- `STUDYFORGE_DEEPL_API_KEY`: lựa chọn khuyến nghị cho demo; DeepL được ưu tiên khi biến này có giá trị.
+- `STUDYFORGE_GOOGLE_TRANSLATE_API_KEY`: Google Cloud Translation Basic tùy chọn, dùng làm fallback khi DeepL để trống.
 
-Nếu biến Google Translation để trống, tra nghĩa EN vẫn hoạt động bình thường và nút `VI` báo rõ tính năng chưa được cấu hình. Cloud Translation là dịch vụ bên ngoài có quota/billing riêng; StudyForge không tự tạo tài khoản, key hoặc phát sinh cấu hình cloud thay người vận hành.
+Hai provider chỉ được gọi khi người dùng bấm `VI`. Nếu cả hai biến để trống, tra nghĩa EN vẫn hoạt động bình thường và nút `VI` báo rõ tính năng chưa được cấu hình. StudyForge không đưa key vào bundle frontend hoặc response API.
 
 ## Tài liệu
 

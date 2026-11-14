@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { DictionaryResult } from '../packages/contracts/src/index.ts';
 import { DictionaryService } from '../backend/src/modules/dictionary/dictionary.service.ts';
-import { GoogleTranslationClient } from '../backend/src/modules/dictionary/translation.provider.ts';
+import { DeepLTranslationClient, GoogleTranslationClient } from '../backend/src/modules/dictionary/translation.provider.ts';
 
 function dictionaryResult(): DictionaryResult {
   return {
@@ -41,6 +41,30 @@ test('Google translation adapter sends a server-side batch and returns translati
     q: ['learn carefully', 'look at closely'], source: 'en', target: 'vi', format: 'text',
   });
   assert.equal(JSON.stringify(translated).includes('translation-test-key'), false);
+});
+
+test('DeepL translation adapter sends a protected EN to VI batch in provider order', async () => {
+  let requestedUrl = '';
+  let requestedAuthorization = '';
+  let requestedBody: unknown;
+  const request: typeof fetch = async (input, init) => {
+    requestedUrl = String(input);
+    requestedAuthorization = String(new Headers(init?.headers).get('authorization'));
+    requestedBody = JSON.parse(String(init?.body));
+    return new Response(JSON.stringify({ translations: [
+      { text: 'học cẩn thận' }, { text: 'xem xét kỹ' },
+    ] }), { status: 200, headers: { 'content-type': 'application/json' } });
+  };
+  const client = new DeepLTranslationClient('deepl-test-key', request);
+  const translated = await client.translateEnglishToVietnamese(['learn carefully', 'look at closely']);
+
+  assert.equal(requestedUrl, 'https://api-free.deepl.com/v2/translate');
+  assert.equal(requestedAuthorization, 'DeepL-Auth-Key deepl-test-key');
+  assert.deepEqual(requestedBody, {
+    text: ['learn carefully', 'look at closely'], source_lang: 'EN', target_lang: 'VI',
+  });
+  assert.deepEqual(translated, ['học cẩn thận', 'xem xét kỹ']);
+  assert.equal(JSON.stringify(translated).includes('deepl-test-key'), false);
 });
 
 test('dictionary translation de-duplicates definitions and does not mutate the English provider result', async () => {
@@ -84,6 +108,21 @@ test('translation errors distinguish missing configuration, rate limits and malf
   });
   const malformed: typeof fetch = async () => new Response(JSON.stringify({ data: { translations: [] } }));
   await assert.rejects(new GoogleTranslationClient('key', malformed).translateEnglishToVietnamese(['study']), {
+    code: 'TRANSLATION_FORMAT_UNSUPPORTED',
+  });
+});
+
+test('DeepL translation errors distinguish invalid keys, exhausted quota and malformed responses', async () => {
+  const invalid: typeof fetch = async () => new Response('', { status: 403 });
+  await assert.rejects(new DeepLTranslationClient('key', invalid).translateEnglishToVietnamese(['study']), {
+    code: 'TRANSLATION_NOT_CONFIGURED',
+  });
+  const exhausted: typeof fetch = async () => new Response('', { status: 456 });
+  await assert.rejects(new DeepLTranslationClient('key', exhausted).translateEnglishToVietnamese(['study']), {
+    code: 'TRANSLATION_QUOTA_EXCEEDED',
+  });
+  const malformed: typeof fetch = async () => new Response(JSON.stringify({ translations: [] }));
+  await assert.rejects(new DeepLTranslationClient('key', malformed).translateEnglishToVietnamese(['study']), {
     code: 'TRANSLATION_FORMAT_UNSUPPORTED',
   });
 });

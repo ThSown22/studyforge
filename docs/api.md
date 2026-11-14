@@ -16,7 +16,7 @@ API dùng JSON và cookie HttpOnly `studyforge_session`. Frontend gọi `/api` c
 | PATCH | `/api/words/:id/collection` | Chuyển bộ sưu tập |
 | PATCH | `/api/words/:id/status` | Đặt trạng thái học |
 | GET | `/api/dictionary/:term` | Tra nghĩa EN qua adapter Merriam-Webster server-side |
-| GET | `/api/dictionary/:term?language=vi` | Tra từ rồi dịch theo từng nghĩa sang VI qua adapter Google server-side |
+| GET | `/api/dictionary/:term?language=vi` | Tra từ rồi dịch theo từng nghĩa sang VI qua adapter server-side (DeepL ưu tiên, Google fallback) |
 | GET | `/api/review/queue` | Lấy hàng đợi ôn |
 | POST | `/api/review/events` | Ghi kết quả tự đánh giá |
 

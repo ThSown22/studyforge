@@ -8,7 +8,7 @@
 | Tra từ EN, POS, nghĩa, ví dụ | Đã xác minh với Merriam-Webster API thật; parser giữ POS, nghĩa, ví dụ, grammar/usage notes và tách cụm từ liên quan khỏi entry chính |
 | Audio và Word Family | URL phát âm và Word Family đã được xác minh trong response thật; nút phát âm có trạng thái enabled/disabled theo dữ liệu |
 | Hàng đợi ôn và review events | Đã qua Compose smoke test |
-| Dịch VI theo từng sense | Đã có adapter Google Cloud Translation, gọi theo nhu cầu khi bấm VI; unit test dùng response giả lập, runtime thật cần key Google hợp lệ |
+| Dịch VI theo từng sense | Đã có adapter DeepL ưu tiên và Google fallback, chỉ gọi khi bấm VI; unit test dùng response giả lập, runtime thật cần một key hợp lệ |
 | Chrome Extension | Chưa triển khai |
 | Import JSON/CSV có kiểm tra license | Chưa triển khai cho V2 |
 | PostgreSQL migration và phục hồi kết nối | Migration idempotent; restart DB/toàn stack giữ dữ liệu và backend tự retry |
