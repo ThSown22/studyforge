@@ -4,6 +4,7 @@ import { renderHeader } from './layouts/header.ts';
 import { renderFooter } from './layouts/footer.ts';
 import { renderHomePage } from './pages/home-page.ts';
 import { renderVocabularyPage } from './pages/vocabulary-page.ts';
+import { renderCollectionPage } from './pages/collection-page.ts';
 import { renderDictionaryPage } from './pages/dictionary-page.ts';
 import { renderReviewPage } from './pages/review-page.ts';
 import { showAuthDialog } from './features/auth/auth-dialog.ts';
@@ -25,7 +26,9 @@ async function render(scroll=true){
     if(signal.aborted||turn!==version)return;
     shell.querySelector('header')!.replaceWith(renderHeader(user,location.pathname,signal));
     const path=location.pathname;
-    const page=path==='/'?renderHomePage(user,signal):path==='/vocabulary'?renderVocabularyPage(user,signal):path==='/vocabulary/review'?renderReviewPage(user,signal):path==='/dictionary'?renderDictionaryPage(user,signal):null;
+    const reviewMatch=path.match(/^\/vocabulary\/collections\/([0-9a-f-]{36})\/review$/i);
+    const collectionMatch=path.match(/^\/vocabulary\/collections\/([0-9a-f-]{36})$/i);
+    const page=path==='/'?renderHomePage(user,signal):path==='/vocabulary'?renderVocabularyPage(user,signal):reviewMatch?renderReviewPage(user,reviewMatch[1],signal):collectionMatch?renderCollectionPage(user,collectionMatch[1],signal):path==='/dictionary'?renderDictionaryPage(user,signal):null;
     if(page){main.replaceChildren(page);document.title=`${page.querySelector('h1')?.textContent?.trim()||'StudyForge'} — StudyForge`;}
     else{const missing=el('<section class="page-container panel v2-not-found"><h1>Trang này chưa có trong StudyForge V2.</h1><p>Quay về Trang chủ, Kho từ hoặc Tra từ.</p><a class="btn btn-primary" href="/" data-route>Về Trang chủ</a></section>');bindLinks(missing,signal);main.replaceChildren(missing);}
   }catch(error){if(signal.aborted)return;const failed=el('<section class="page-container panel v2-not-found"><h1>Chưa kết nối được StudyForge.</h1><p></p><button class="btn btn-primary">Thử lại</button></section>');failed.querySelector('p')!.textContent=(error as Error).message;failed.querySelector('button')!.addEventListener('click',()=>void render(false),{signal});main.replaceChildren(failed);}

@@ -16,7 +16,7 @@
   .account-label { display: none; }
   .account-menu { flex: 0; }
   .account-menu > summary { padding: 5px; gap: 0; }
-  .account-menu .chevron { display: none; }
+  .account-menu .account-chevron { display: none; }
 }
 
 @media (max-width: 520px) {

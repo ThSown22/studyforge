@@ -10,7 +10,7 @@ if (!existsSync(compiler)) {
   process.exitCode = 1;
 } else {
   const ts = require(compiler);
-  for (const file of ['frontend/tsconfig.json', 'backend/tsconfig.json']) {
+  for (const file of ['frontend/tsconfig.json', 'backend/tsconfig.json', 'tests/tsconfig.json']) {
     const config = JSON.parse(readFileSync(resolve(root, file), 'utf8'));
     const parsed = ts.parseJsonConfigFileContent(config, ts.sys, resolve(root, file, '..'));
     const program = ts.createProgram(parsed.fileNames, parsed.options);

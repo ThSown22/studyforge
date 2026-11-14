@@ -10,5 +10,5 @@
     "allowImportingTsExtensions": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "../packages/contracts/src/**/*.ts", "../tests/**/*.test.ts"]
+  "include": ["src/**/*.ts", "../packages/contracts/src/**/*.ts"]
 }

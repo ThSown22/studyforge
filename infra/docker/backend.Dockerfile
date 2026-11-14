@@ -30,7 +30,6 @@ COPY scripts/build.mjs scripts/paths.mjs scripts/frontend-config.mjs ./scripts/
 COPY backend/src ./backend/src
 COPY backend/tsconfig.json ./backend/tsconfig.json
 COPY packages ./packages
-COPY tests ./tests
 RUN node node_modules/typescript/lib/tsc.js --project backend/tsconfig.json
 RUN node scripts/build.mjs --backend-only
 

@@ -17,9 +17,9 @@ API dùng JSON và cookie HttpOnly `studyforge_session`. Frontend gọi `/api` c
 | PATCH | `/api/words/:id/status` | Đặt trạng thái học |
 | GET | `/api/dictionary/:term` | Tra nghĩa EN qua adapter Merriam-Webster server-side |
 | GET | `/api/dictionary/:term?language=vi` | Tra từ rồi dịch theo từng nghĩa sang VI qua adapter DeepL server-side |
-| GET | `/api/review/queue` | Lấy hàng đợi ôn |
-| POST | `/api/review/events` | Ghi kết quả tự đánh giá |
+| GET | `/api/review/queue?collectionId=:id` | Lấy hàng đợi ôn thuộc đúng một bộ sưu tập |
+| POST | `/api/review/events` | Ghi mức tự đánh giá `1` (chưa nhớ), `2` (hơi nhớ), `3` (đã nhớ) |
 
 `language` chỉ nhận `en` hoặc `vi`. Backend dịch theo batch, không lưu bản dịch của nhà cung cấp vào PostgreSQL và không trả API key cho trình duyệt. Nếu thiếu key dịch, endpoint VI trả `TRANSLATION_NOT_CONFIGURED`; endpoint EN không bị ảnh hưởng.
 
-Smoke test Compose đã xác nhận proxy, auth/session, collections, chống lưu từ trùng, đổi trạng thái và review với PostgreSQL. Ngày 14/11/2026, endpoint VI đã được gọi qua frontend proxy và xác minh trả định nghĩa tiếng Việt từ DeepL thật.
+Smoke test Compose xác nhận proxy, auth/session, collections, chống lưu từ trùng, đổi trạng thái, hàng đợi theo bộ sưu tập và ba mức tự đánh giá với PostgreSQL. Ngày 14/11/2026, endpoint VI đã được gọi qua frontend proxy và xác minh trả định nghĩa tiếng Việt từ DeepL thật.

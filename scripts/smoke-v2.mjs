@@ -54,16 +54,17 @@ try {
   await request('PATCH', `/api/words/${first.word.id}/collection`, { collectionId: firstCollection.id });
   await request('DELETE', `/api/collections/${secondCollection.id}`);
   await request('PATCH', `/api/words/${first.word.id}/status`, { status: 'learning' });
-  const queue = await request('GET', '/api/review/queue');
-  if (!queue.words.some(word => word.id === first.word.id)) throw new Error('Saved word missing from review queue.');
-  await request('POST', '/api/review/events', { savedWordId: first.word.id, correct: false, durationMs: 1000 });
+  const queue = await request('GET', `/api/review/queue?collectionId=${firstCollection.id}`);
+  if (queue.words.length !== 1 || queue.words[0].id !== first.word.id) throw new Error('Collection-scoped review queue is incorrect.');
+  const review = await request('POST', '/api/review/events', { savedWordId: first.word.id, rating: 1, durationMs: 1000 });
+  if (review.event.rating !== 1 || review.event.correct !== false) throw new Error('Three-level review rating was not recorded correctly.');
   const stats = await request('GET', '/api/words/stats');
   if (stats.stats.total !== 1 || stats.stats.learning !== 1 || stats.stats.reviewEvents !== 1) throw new Error('Vocabulary statistics mismatch.');
   await request('PATCH', `/api/words/${first.word.id}/status`, { status: 'known' });
   await request('PATCH', `/api/words/${first.word.id}/status`, { status: 'new' });
   await request('POST', '/api/auth/logout');
   await request('GET', '/api/collections', undefined, 401);
-  console.log('V2 Compose smoke test passed: proxy, PostgreSQL, auth lifecycle, collection CRUD, vocabulary filters/move/duplicate/status, review.');
+  console.log('V2 Compose smoke test passed: proxy, PostgreSQL, auth lifecycle, collection CRUD, vocabulary filters/move/duplicate/status, collection-scoped review and ratings.');
 } finally {
   try {
     await db.query('DELETE FROM users WHERE email_normalized=$1', [email]);

@@ -1,5 +1,5 @@
 import type { User, CollectionSummary, SavedWordSummary, VocabularyStats, DictionaryResult, LearningStatus } from '../../../packages/contracts/src/index.ts';
-import { el, escapeHtml as e, bindLinks, openAuth, toast } from '../core/dom.ts';
+import { el, escapeHtml as e, bindLinks, navigate, openAuth, toast } from '../core/dom.ts';
 import { api } from '../services/api.ts';
 import { lookupDictionary } from '../services/dictionary-api.ts';
 import { renderDictionaryResult } from '../components/dictionary-result.ts';
@@ -7,7 +7,7 @@ import { renderDictionaryResult } from '../components/dictionary-result.ts';
 const statusLabel: Record<LearningStatus,string>={new:'Chưa học',learning:'Đang học',known:'Đã nhớ'};
 export function renderVocabularyPage(user: User | null, signal: AbortSignal): HTMLElement {
   const root=el(`<div class="page-container v2-page"><div class="v2-page-head"><div><p class="v2-overline">THƯ VIỆN CỦA RIÊNG BẠN</p><h1>Kho từ vựng của tôi</h1><p>Những từ bạn gặp, chọn lưu và học theo nhịp riêng.</p></div><a class="btn btn-primary" data-route href="/dictionary">＋ Thêm từ mới</a></div>
-    <div class="v2-stats"></div><section class="panel v2-vault"><div class="v2-vault-head"><div><h2>Thư viện của bạn</h2><p class="muted">Tìm, sắp xếp và tự đánh dấu mức độ ghi nhớ.</p></div><div class="v2-vault-actions"><button type="button" class="btn btn-outline" data-add-word>＋ Lưu từ thủ công</button><a href="/vocabulary/review" data-route class="btn btn-outline">Ôn tập từ hôm nay →</a></div></div>
+    <div class="v2-stats"></div><section class="panel v2-vault"><div class="v2-vault-head"><div><h2>Thư viện của bạn</h2><p class="muted">Tìm, sắp xếp và tự đánh dấu mức độ ghi nhớ.</p></div><div class="v2-vault-actions"><button type="button" class="btn btn-outline" data-add-word>＋ Lưu từ thủ công</button></div></div>
     <div class="v2-tabs" role="group" aria-label="Lọc từ"><button type="button" data-status="all">Tất cả</button><button type="button" data-status="new">Chưa học</button><button type="button" data-status="learning">Đang học</button><button type="button" data-status="known">Đã nhớ</button></div>
     <div class="v2-toolbar"><label><span>Tìm từ</span><input type="search" name="q" placeholder="Tìm từ đã lưu…"></label><label><span>Bộ sưu tập</span><select name="collection"><option value="">Tất cả bộ sưu tập</option></select></label></div>
     <div class="v2-collection-section"><div class="v2-collection-bar"><div><h3>Bộ sưu tập</h3><p>Nhóm từ theo chủ đề bạn muốn học.</p></div><button type="button" class="btn btn-soft" data-create>＋ Tạo bộ</button></div><div class="v2-collections"></div></div>
@@ -33,7 +33,7 @@ export function renderVocabularyPage(user: User | null, signal: AbortSignal): HT
       const stats=statsData.stats;
       statsSlot.innerHTML=[['Tổng từ đã lưu',stats.total],['Chưa học',stats.new],['Đang học',stats.learning],['Đã nhớ',stats.known]].map(([label,value])=>`<div class="panel v2-stat"><span>${e(label)}</span><strong>${e(value)}</strong></div>`).join('');
       collectionSelect.innerHTML='<option value="">Tất cả bộ sưu tập</option>'+collections.map(item=>`<option value="${e(item.id)}">${e(item.name)}</option>`).join('');
-      collectionSlot.innerHTML=collections.length?collections.map(item=>`<article class="v2-collection-tile"><div class="v2-collection-heading"><strong>${e(item.name)}</strong><small>${item.wordCount} từ</small></div>${item.description?`<p>${e(item.description)}</p>`:'<p class="v2-collection-no-description">Chưa có mô tả</p>'}<details class="v2-collection-menu"><summary aria-label="Thao tác với bộ ${e(item.name)}" title="Thao tác">⋯</summary><div class="v2-collection-menu-popover" role="menu"><button type="button" role="menuitem" data-rename="${e(item.id)}">Đổi tên</button><button type="button" role="menuitem" class="danger" data-delete="${e(item.id)}">Xóa bộ</button></div></details></article>`).join(''):'<div class="v2-collection-empty"><p>Chưa có bộ sưu tập.</p><span>Tạo bộ đầu tiên để bắt đầu lưu từ.</span></div>';
+      collectionSlot.innerHTML=collections.length?collections.map(item=>`<article class="v2-collection-tile"><button type="button" class="v2-collection-open" data-open-collection="${e(item.id)}" aria-label="Mở bộ ${e(item.name)}"><span class="v2-collection-heading"><strong>${e(item.name)}</strong><small>${item.wordCount} từ</small></span>${item.description?`<span class="v2-collection-description">${e(item.description)}</span>`:'<span class="v2-collection-description v2-collection-no-description">Chưa có mô tả</span>'}<span class="v2-collection-enter">Mở bộ <b aria-hidden="true">→</b></span></button><details class="v2-collection-menu"><summary aria-label="Thao tác với bộ ${e(item.name)}" title="Thao tác">⋯</summary><div class="v2-collection-menu-popover" role="menu"><button type="button" role="menuitem" data-rename="${e(item.id)}">Đổi tên</button><button type="button" role="menuitem" class="danger" data-delete="${e(item.id)}">Xóa bộ</button></div></details></article>`).join(''):'<div class="v2-collection-empty"><p>Chưa có bộ sưu tập.</p><span>Tạo bộ đầu tiên để bắt đầu lưu từ.</span></div>';
       paintList();
     }catch(error){if(!signal.aborted)listSlot.textContent=(error as Error).message;}
   }
@@ -97,6 +97,8 @@ export function renderVocabularyPage(user: User | null, signal: AbortSignal): HT
   },{signal});
   collectionSlot.addEventListener('click',async event=>{
     const target=event.target as HTMLElement;
+    const open=target.closest<HTMLButtonElement>('[data-open-collection]')?.dataset.openCollection;
+    if(open){navigate(`/vocabulary/collections/${open}`);return;}
     const rename=target.closest<HTMLButtonElement>('[data-rename]')?.dataset.rename;
     const remove=target.closest<HTMLButtonElement>('[data-delete]')?.dataset.delete;
     const item=collections.find(collection=>collection.id===(rename||remove));if(!item)return;

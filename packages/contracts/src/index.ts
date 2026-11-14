@@ -22,4 +22,4 @@ export interface DictionaryResult {
   savedWord: SavedWordSummary | null;
 }
 export interface VocabularyStats { total: number; new: number; learning: number; known: number; reviewEvents: number }
-export interface ReviewEventSummary { id: string; savedWordId: string; reviewMode: string; correct: boolean | null; reviewedAt: string }
+export interface ReviewEventSummary { id: string; savedWordId: string; reviewMode: string; rating: number | null; correct: boolean | null; reviewedAt: string }
