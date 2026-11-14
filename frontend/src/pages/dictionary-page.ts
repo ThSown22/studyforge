@@ -1,6 +1,7 @@
 import type { User, CollectionSummary, DictionaryResult } from '../../../packages/contracts/src/index.ts';
 import { el, escapeHtml as e, bindLinks, openAuth, toast } from '../core/dom.ts';
 import { api } from '../services/api.ts';
+import { lookupDictionary } from '../services/dictionary-api.ts';
 import { renderDictionaryResult } from '../components/dictionary-result.ts';
 
 const recent: string[] = [];
@@ -28,10 +29,10 @@ export function renderDictionaryPage(user: User | null, signal: AbortSignal): HT
     history.replaceState({},'',`/dictionary?q=${encodeURIComponent(value)}`);
     state.textContent='Đang tra từ…'; slot.replaceChildren();
     try {
-      const result=await api<DictionaryResult>(`/api/dictionary/${encodeURIComponent(value)}`,{signal});
+      const result=await lookupDictionary(value,'en',signal);
       if(signal.aborted||version!==lookupVersion)return;
       state.textContent='';
-      const view=renderDictionaryResult(result,next=>void lookup(next));
+      const view=renderDictionaryResult(result,next=>void lookup(next),()=>lookupDictionary(result.term,'vi',signal));
       slot.append(view);
       recent.unshift(value); const unique=[...new Set(recent)].slice(0,6);recent.splice(0,recent.length,...unique);paintRecent();
       if(user) {

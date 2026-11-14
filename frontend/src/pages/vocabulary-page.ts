@@ -1,6 +1,7 @@
 import type { User, CollectionSummary, SavedWordSummary, VocabularyStats, DictionaryResult, LearningStatus } from '../../../packages/contracts/src/index.ts';
 import { el, escapeHtml as e, bindLinks, openAuth, toast } from '../core/dom.ts';
 import { api } from '../services/api.ts';
+import { lookupDictionary } from '../services/dictionary-api.ts';
 import { renderDictionaryResult } from '../components/dictionary-result.ts';
 
 const statusLabel: Record<LearningStatus,string>={new:'Chưa học',learning:'Đang học',known:'Đã nhớ'};
@@ -67,10 +68,10 @@ export function renderVocabularyPage(user: User | null, signal: AbortSignal): HT
       catch(error){toast((error as Error).message,'error');moveInput.value=word.collectionId;}
     },{signal});
     try{
-      const result=await api<DictionaryResult>(`/api/dictionary/${encodeURIComponent(word.term)}`,{signal});
+      const result=await lookupDictionary(word.term,'en',signal);
       if(signal.aborted||selected!==word.id)return;
       const slot=detailSlot.querySelector<HTMLElement>('.v2-detail-definition')!;
-      slot.replaceChildren(renderDictionaryResult(result,term=>{history.pushState({},'',`/dictionary?q=${encodeURIComponent(term)}`);window.dispatchEvent(new Event('studyforge:navigate'));}));
+      slot.replaceChildren(renderDictionaryResult(result,term=>{history.pushState({},'',`/dictionary?q=${encodeURIComponent(term)}`);window.dispatchEvent(new Event('studyforge:navigate'));},()=>lookupDictionary(result.term,'vi',signal)));
     }catch(error){if(!signal.aborted&&selected===word.id)detailSlot.querySelector<HTMLElement>('.v2-detail-definition')!.textContent=`Chưa tải được nghĩa: ${(error as Error).message}`;}
   }
   root.querySelector('.v2-tabs')!.addEventListener('click',event=>{const value=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-status]')?.dataset.status;if(value&&['all','new','learning','known'].includes(value)){status=value as typeof status;paintList();}},{signal});

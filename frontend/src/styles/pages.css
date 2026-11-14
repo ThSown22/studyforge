@@ -201,3 +201,19 @@
   .v2-collection-bar { align-items: flex-end; }
   .v2-empty-state { min-height: 220px; padding: 22px; }
 }
+
+.v2-translation-state {
+  min-height: 20px;
+  margin: -10px 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.v2-translation-state:empty { display: none; }
+.v2-translation-state.is-error { color: #a13f39; }
+.v2-translation-fallback {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-weight: 500;
+}

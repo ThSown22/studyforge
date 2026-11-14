@@ -15,8 +15,11 @@ API dùng JSON và cookie HttpOnly `studyforge_session`. Frontend gọi `/api` c
 | GET | `/api/words/stats` | Thống kê trạng thái và review |
 | PATCH | `/api/words/:id/collection` | Chuyển bộ sưu tập |
 | PATCH | `/api/words/:id/status` | Đặt trạng thái học |
-| GET | `/api/dictionary/:term` | Tra từ qua adapter server-side |
+| GET | `/api/dictionary/:term` | Tra nghĩa EN qua adapter Merriam-Webster server-side |
+| GET | `/api/dictionary/:term?language=vi` | Tra từ rồi dịch theo từng nghĩa sang VI qua adapter Google server-side |
 | GET | `/api/review/queue` | Lấy hàng đợi ôn |
 | POST | `/api/review/events` | Ghi kết quả tự đánh giá |
 
-Smoke test Compose đã xác nhận proxy, auth/session, collections, chống lưu từ trùng, đổi trạng thái và review với PostgreSQL. Dictionary API thật vẫn cần key hợp lệ để kiểm tra end-to-end.
+`language` chỉ nhận `en` hoặc `vi`. Backend dịch theo batch, không lưu bản dịch của nhà cung cấp vào PostgreSQL và không trả API key cho trình duyệt. Nếu thiếu key dịch, endpoint VI trả `TRANSLATION_NOT_CONFIGURED`; endpoint EN không bị ảnh hưởng.
+
+Smoke test Compose đã xác nhận proxy, auth/session, collections, chống lưu từ trùng, đổi trạng thái và review với PostgreSQL. Từng adapter bên ngoài cần key hợp lệ để kiểm tra end-to-end.

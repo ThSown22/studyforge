@@ -52,6 +52,6 @@ test('dictionary lookup includes user-owned saved state without changing provide
   const result:DictionaryResult={term:'resilient',language:'en',pronunciations:[],entries:[{id:'entry',partOfSpeech:'adjective',labels:[],senses:[{id:'sense',order:1,definitionEn:'able to recover',definitionVi:null,examplesEn:['a resilient team'],labels:[]}]}],relatedEntries:[],wordFamily:[],suggestions:[],savedWord:null};
   const provider={lookup:async()=>result};
   const lookup={byTerm:async()=>word};
-  const found=await new DictionaryService(provider as never,lookup).lookup(' Resilient ','user-1');
+  const found=await new DictionaryService(provider,lookup).lookup(' Resilient ','user-1');
   assert.equal(found.savedWord?.collectionName,'IT');assert.equal(found.entries[0].senses[0].examplesEn.length,1);
 });

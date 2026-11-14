@@ -1,6 +1,7 @@
 import type { User, SavedWordSummary, DictionaryResult } from '../../../packages/contracts/src/index.ts';
 import { el, escapeHtml as e, bindLinks, toast } from '../core/dom.ts';
 import { api } from '../services/api.ts';
+import { lookupDictionary } from '../services/dictionary-api.ts';
 import { renderDictionaryResult } from '../components/dictionary-result.ts';
 
 export function renderReviewPage(user: User | null, signal: AbortSignal): HTMLElement {
@@ -17,10 +18,10 @@ export function renderReviewPage(user: User | null, signal: AbortSignal): HTMLEl
     reveal.addEventListener('click',async()=>{
       reveal.disabled=true;const answer=card.querySelector<HTMLElement>('.v2-review-answer')!;answer.textContent='Đang tải định nghĩa…';
       try{
-        lookup=await api<DictionaryResult>(`/api/dictionary/${encodeURIComponent(word.term)}`,{signal});
+        lookup=await lookupDictionary(word.term,'en',signal);
         if(signal.aborted||index>=queue.length||queue[index].id!==word.id)return;
         if(!lookup.entries.length){answer.textContent='Nguồn từ điển chưa có định nghĩa cho từ này. Bạn có thể bỏ qua thẻ.';return;}
-        answer.replaceChildren(renderDictionaryResult(lookup,term=>{history.pushState({},'',`/dictionary?q=${encodeURIComponent(term)}`);window.dispatchEvent(new Event('studyforge:navigate'));}));
+        answer.replaceChildren(renderDictionaryResult(lookup,term=>{history.pushState({},'',`/dictionary?q=${encodeURIComponent(term)}`);window.dispatchEvent(new Event('studyforge:navigate'));},()=>lookupDictionary(word.term,'vi',signal)));
         const actions=el('<div class="v2-review-actions"><button type="button" data-correct="false" class="btn btn-outline">Chưa nhớ</button><button type="button" data-correct="true" class="btn btn-primary">Đã nhớ trong lượt này</button></div>');answer.append(actions);
         actions.addEventListener('click',async event=>{
           const button=(event.target as HTMLElement).closest<HTMLButtonElement>('[data-correct]');if(!button)return;
