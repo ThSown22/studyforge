@@ -133,7 +133,7 @@ update-gitops:
   needs:
     - verify-images
   before_script:
-    - apk add --no-cache git yq
+    - apk add --no-cache git yq-go
     - test -n "$GITOPS_REPO" || (echo "GITOPS_REPO is required" && exit 1)
     - test -n "$GITOPS_TOKEN" || (echo "GITOPS_TOKEN is required" && exit 1)
     - |
