@@ -3,6 +3,8 @@ kind: Application
 metadata:
   name: studyforge-app
   namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 spec:
@@ -25,3 +27,10 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m

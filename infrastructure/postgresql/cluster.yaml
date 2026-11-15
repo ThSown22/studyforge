@@ -2,6 +2,10 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: studyforge-postgres
+  namespace: studyforge
+  labels:
+    app.kubernetes.io/name: studyforge-postgres
+    app.kubernetes.io/part-of: studyforge
   annotations:
     # The database must never be removed by an automated Argo CD prune.
     argocd.argoproj.io/sync-options: Prune=false

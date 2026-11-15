@@ -4,7 +4,7 @@ metadata:
   name: studyforge-database
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "-1"
+    argocd.argoproj.io/sync-wave: "-10"
 spec:
   project: default
   source:
@@ -18,8 +18,16 @@ spec:
     namespace: studyforge
   syncPolicy:
     automated:
-      prune: true
+      # Database deletion is an explicit data operation, never an automatic prune.
+      prune: false
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - PruneLast=true
+      # The Cluster CRD is installed by the preceding CloudNativePG application.
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 3m
