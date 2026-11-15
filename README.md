@@ -1,77 +1,237 @@
-# StudyForge V2
+# StudyForge
 
-StudyForge là ứng dụng học từ vựng tiếng Anh cá nhân: tra từ, lưu mỗi từ vào đúng một bộ sưu tập, quản lý ba trạng thái ghi nhớ và ôn bằng thẻ. Codebase hiện chỉ giữ kiến trúc V2; giáo trình, ngữ pháp, quiz, SQLite và dữ liệu mẫu của V1 đã được loại bỏ.
+StudyForge là ứng dụng web học từ vựng tiếng Anh cá nhân hóa. Người dùng có thể tra từ, lưu mỗi từ vào một bộ sưu tập, theo dõi mức độ ghi nhớ và ôn tập bằng flashcard theo đúng chủ đề mình lựa chọn.
+
+Project được xây dựng theo hướng **Docker-first modular monolith**, phù hợp để học full-stack, thực hành DevOps và phát triển tiếp thành hệ thống triển khai qua GitLab CI/CD, container registry và Kubernetes.
+
+> Phạm vi hiện tại tập trung vào trải nghiệm web desktop. Project không chứa dữ liệu mẫu và không tự động seed tài khoản hoặc từ vựng.
+
+## Tính năng chính
+
+- Đăng ký, đăng nhập và session bằng HttpOnly cookie.
+- Tra từ Anh–Anh qua Merriam-Webster Learner's Dictionary API.
+- Dịch định nghĩa Anh–Việt theo yêu cầu qua DeepL API.
+- Phiên âm IPA, phát âm, nghĩa, ví dụ và Word Family.
+- Quản lý bộ sưu tập từ vựng cá nhân.
+- Mỗi từ chỉ thuộc một bộ sưu tập.
+- Ba trạng thái ghi nhớ: Chưa học, Đang học và Đã nhớ.
+- Flashcard theo từng bộ sưu tập với ba mức tự đánh giá.
+- Cây kiến thức phát triển theo số từ đã lưu, từ đã nhớ và lượt ôn.
 
 ## Kiến trúc
 
-- Frontend TypeScript chạy trong container riêng và chuyển tiếp `/api/*` đến backend.
-- Backend Node.js/TypeScript là modular monolith, chia theo auth, collections, vocabulary, dictionary và review.
-- PostgreSQL chạy bằng Docker Compose; migration chạy bằng one-shot container trước backend.
-- Root `.env` là file cấu hình local duy nhất. Backend và frontend nhận cấu hình runtime từ Compose.
+```text
+Browser
+   │
+   ▼
+Frontend container
+Vite build + Node HTTP server + /api reverse proxy
+   │
+   ▼
+Backend container
+Node.js modular monolith
+   │
+   ├── Merriam-Webster API
+   ├── DeepL API
+   │
+   ▼
+PostgreSQL container
+```
+
+Backend được tổ chức theo module nghiệp vụ:
+
+- `auth`: tài khoản và phiên đăng nhập.
+- `collections`: quản lý bộ sưu tập.
+- `vocabulary`: lưu từ và trạng thái ghi nhớ.
+- `dictionary`: từ điển, parser và dịch nghĩa.
+- `review`: hàng đợi flashcard và lịch sử tự đánh giá.
+
+Migration chạy trong một one-shot container trước khi backend khởi động. Frontend chỉ được khởi động sau khi backend healthy.
+
+## Công nghệ
+
+| Thành phần | Công nghệ |
+| --- | --- |
+| Frontend | TypeScript, Vite, HTML, CSS |
+| Backend | Node.js, TypeScript, esbuild |
+| Database | PostgreSQL 17 |
+| Shared contracts | npm workspace `@studyforge/contracts` |
+| Container | Docker, Docker Compose |
+| Quality | TypeScript strict mode, Node test runner, smoke test |
 
 ## Cấu trúc repository
 
 ```text
-frontend/            # Web app, Vite build và HTTP/proxy server
-backend/             # Modular monolith API, esbuild production bundle
-database/migrations/ # PostgreSQL migrations có version
-packages/contracts/  # Types dùng chung qua @studyforge/contracts
-infra/docker/        # Dockerfile riêng cho frontend và backend
-tests/unit/          # Unit tests
-tests/smoke/         # Kiểm tra end-to-end của Compose stack
-scripts/             # Quality check và PostgreSQL migration dùng chung
+StudyForge/
+├── frontend/               # Frontend source, Vite build và HTTP/proxy server
+│   ├── src/
+│   ├── public/
+│   ├── package.json
+│   └── tsconfig.json
+├── backend/                # Modular monolith API
+│   ├── src/
+│   │   ├── modules/
+│   │   ├── http/
+│   │   ├── config/
+│   │   ├── infrastructure/
+│   │   └── shared/
+│   ├── package.json
+│   └── tsconfig.json
+├── database/
+│   └── migrations/postgres/
+├── packages/
+│   └── contracts/          # Types trao đổi giữa frontend và backend
+├── infra/
+│   └── docker/             # Dockerfile riêng cho frontend và backend
+├── tests/
+│   ├── unit/
+│   └── smoke/
+├── scripts/                # Quality check và PostgreSQL migration
+├── compose.yaml
+├── package.json            # Điều phối npm workspaces
+├── package-lock.json       # Lockfile duy nhất của monorepo
+└── .env.example
 ```
 
-Root `package.json` khai báo npm workspaces. Frontend, backend và contracts tự sở hữu dependency, lệnh build và typecheck; root chỉ điều phối toàn bộ monorepo.
+## Yêu cầu môi trường
 
-## Chạy bằng Docker Compose
+Để chạy ứng dụng bằng Docker:
 
-Yêu cầu Docker Desktop với Linux containers. Không cần cài PostgreSQL hoặc package npm global trên Windows.
+- Docker Desktop với Linux containers.
+- Docker Compose v2.
 
-1. Sao chép `.env.example` thành `.env` ở thư mục gốc.
-2. Đổi `STUDYFORGE_DB_PASSWORD` thành mật khẩu dài, ngẫu nhiên.
-3. Nếu có quyền sử dụng Merriam-Webster Learner's API, điền `STUDYFORGE_MERRIAM_WEBSTER_API_KEY`.
-4. Để bật nghĩa tiếng Việt cho bản demo, đăng ký DeepL Developer miễn phí rồi điền `STUDYFORGE_DEEPL_API_KEY`. Không đặt key trong frontend.
-5. Chạy:
+Không cần cài PostgreSQL Server hoặc package npm global trên Windows.
+
+Nếu muốn chạy quality check trực tiếp trên máy:
+
+- Node.js `22.23.4` trở lên.
+- npm tương thích với lockfile v3.
+
+## Khởi chạy nhanh
+
+### 1. Tạo cấu hình môi trường
+
+Trong PowerShell tại thư mục project:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Mở `.env` và thay `STUDYFORGE_DB_PASSWORD` bằng mật khẩu dài, ngẫu nhiên.
+
+### 2. Build và chạy toàn bộ stack
 
 ```powershell
 docker compose up --build -d
 docker compose ps
 ```
 
-6. Mở `http://localhost:3000`. Health endpoint qua frontend proxy: `http://localhost:3000/api/health`.
-7. Dừng bằng `docker compose down`. Không dùng `down -v` nếu muốn giữ dữ liệu PostgreSQL.
+Sau khi các container healthy:
 
-Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động backend và frontend. Named volume `studyforge-postgres` giữ dữ liệu qua các lần rebuild. Dự án không tự seed dữ liệu mẫu.
+- Website: <http://127.0.0.1:3000>
+- Health endpoint: <http://127.0.0.1:3000/api/health>
 
-## Lệnh chính
+### 3. Xem log
 
-| Lệnh | Mục đích |
+```powershell
+docker compose logs -f frontend backend migrate
+```
+
+### 4. Dừng stack
+
+```powershell
+docker compose down
+```
+
+Lệnh trên giữ nguyên named volume PostgreSQL. Không chạy `docker compose down -v` nếu muốn bảo toàn tài khoản, bộ sưu tập và tiến độ học.
+
+## Cấu hình môi trường
+
+Project chỉ sử dụng một file `.env` tại root. File thật được Git ignore; chỉ `.env.example` được commit.
+
+| Biến | Bắt buộc | Mục đích |
+| --- | --- | --- |
+| `STUDYFORGE_DB_PASSWORD` | Có | Mật khẩu PostgreSQL local |
+| `STUDYFORGE_HOST_FE_PORT` | Không | Port frontend expose ra host, mặc định `3000` |
+| `STUDYFORGE_ALLOWED_ORIGINS` | Không | Danh sách origin được backend chấp nhận |
+| `STUDYFORGE_SESSION_TTL_SECONDS` | Không | Thời hạn session, mặc định 7 ngày |
+| `STUDYFORGE_MERRIAM_WEBSTER_API_KEY` | Không | API key từ điển, chỉ tồn tại ở backend |
+| `STUDYFORGE_DEEPL_API_KEY` | Không | API key dịch EN→VI, chỉ tồn tại ở backend |
+
+Nếu không cấu hình DeepL, tra nghĩa tiếng Anh vẫn hoạt động. Frontend không nhận database password hoặc API key của nhà cung cấp.
+
+## npm workspaces
+
+Monorepo gồm ba workspace:
+
+```text
+@studyforge/frontend
+@studyforge/backend
+@studyforge/contracts
+```
+
+Mỗi workspace sở hữu dependency, build script và typecheck riêng. Root `package.json` chỉ điều phối các tác vụ toàn project. Toàn bộ dependency được khóa bằng một `package-lock.json`.
+
+Để cài dependency local trong project:
+
+```powershell
+npm ci
+```
+
+Không sử dụng `npm install -g`.
+
+## Lệnh phát triển và kiểm thử
+
+| Lệnh | Chức năng |
 | --- | --- |
-| `npm test` | Unit tests V2 |
-| `npm run lint` | Kiểm tra source và cấu trúc |
-| `npm run typecheck` | TypeScript strict check |
-| `npm run build` | Build frontend và backend vào `frontend/dist` và `backend/dist` |
-| `npm run db:migrate` | Chạy migration container |
-| `npm run compose:up` | Build và chạy stack |
-| `npm run compose:down` | Dừng stack, giữ volume |
-| `npm run quality:docker` | Chạy lint, typecheck, unit tests và production build trong QA container |
-| `npm run smoke` | Build và chạy smoke test qua Compose |
-| `npm run qa` | Chạy quality gate rồi chạy Compose smoke test |
+| `npm run build` | Build frontend bằng Vite và backend bằng esbuild |
+| `npm run typecheck` | Typecheck contracts, frontend, backend và tests |
+| `npm run lint` | Kiểm tra cú pháp, import và định dạng cơ bản |
+| `npm test` | Chạy unit tests |
+| `npm run check` | Chạy lint, typecheck, unit tests và production build |
+| `npm run compose:up` | Build và chạy Compose stack |
+| `npm run compose:down` | Dừng stack nhưng giữ database volume |
+| `npm run db:migrate` | Chạy migration one-shot container |
+| `npm run quality:docker` | Chạy quality gate trong container |
+| `npm run smoke` | Kiểm tra frontend proxy, backend và PostgreSQL qua Compose |
+| `npm run qa` | Chạy quality container rồi smoke test |
 
-Root `package-lock.json` khóa toàn bộ npm workspaces gồm frontend, backend và contracts. Mỗi workspace sở hữu lệnh build/typecheck của mình; Dockerfiles chỉ gọi các lệnh workspace bằng `npm ci` và `npm run`. Không cài package global và quality container không ghi `node_modules` ra máy Windows. Ngày 15/11/2026, QA Docker đã xác nhận lint, typecheck frontend/backend/contracts/tests, 25 unit tests, production build Vite/esbuild, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ, hàng đợi ôn theo bộ và ba mức tự đánh giá. Merriam-Webster API thật, DeepL EN→VI thật, trang chi tiết bộ sưu tập, phiên flashcard và năm giai đoạn cây kiến thức cũng đã được kiểm tra trong trình duyệt desktop. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
+Quality gate đầy đủ:
 
-## Cấu hình
+```powershell
+npm run qa
+```
 
-Chỉ commit `.env.example`; không commit `.env`. Các biến chính:
+## Database và migrations
 
-- `STUDYFORGE_DB_PASSWORD`: mật khẩu PostgreSQL local.
-- `STUDYFORGE_HOST_FE_PORT`: cổng frontend expose ra host.
-- `STUDYFORGE_ALLOWED_ORIGINS`: danh sách origin được backend chấp nhận.
-- `STUDYFORGE_SESSION_TTL_SECONDS`: thời hạn session.
-- `STUDYFORGE_MERRIAM_WEBSTER_API_KEY`: key tùy chọn, server-side.
-- `STUDYFORGE_DEEPL_API_KEY`: key DeepL server-side dùng để dịch định nghĩa EN sang VI khi người dùng yêu cầu.
+PostgreSQL sử dụng named volume `studyforge-postgres`. Migration nằm trong `database/migrations/postgres` và được thực thi theo thứ tự tên file.
 
-DeepL chỉ được gọi khi người dùng bấm `VI`. Nếu biến để trống, tra nghĩa EN vẫn hoạt động bình thường và nút `VI` báo rõ tính năng chưa được cấu hình. StudyForge không đưa key vào bundle frontend hoặc response API.
+Quy tắc migration:
 
-Git hiện chỉ ở local; chưa cấu hình remote hoặc push GitHub.
+- Migration đã áp dụng không được chỉnh sửa nội dung.
+- Thay đổi schema mới phải tạo migration mới.
+- Migration được ghi checksum trong bảng `schema_migrations`.
+- Project không tự seed dữ liệu demo.
+
+## Bảo mật cấu hình
+
+- Không commit `.env` hoặc API key.
+- API key Merriam-Webster và DeepL chỉ được đọc ở backend.
+- Frontend chỉ nhận các biến được cho phép thông qua `/config.js`.
+- Session được lưu bằng HttpOnly cookie.
+- Database không expose port trực tiếp ra host trong Compose mặc định.
+- Production images chạy bằng non-root user.
+
+## Trạng thái kiểm thử
+
+Lần xác minh gần nhất: **15/11/2026**.
+
+- npm audit: không phát hiện vulnerability.
+- TypeScript strict check: pass.
+- Unit tests: `25/25` pass.
+- Frontend Vite production build: pass.
+- Backend esbuild production build: pass.
+- Docker quality container: pass.
+- Docker Compose smoke test: pass.
+- PostgreSQL, backend và frontend healthcheck: healthy.
+- Dữ liệu PostgreSQL được giữ nguyên qua rebuild container.
