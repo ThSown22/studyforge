@@ -63,14 +63,4 @@ Chỉ commit `.env.example`; không commit `.env`. Các biến chính:
 
 DeepL chỉ được gọi khi người dùng bấm `VI`. Nếu biến để trống, tra nghĩa EN vẫn hoạt động bình thường và nút `VI` báo rõ tính năng chưa được cấu hình. StudyForge không đưa key vào bundle frontend hoặc response API.
 
-## Tài liệu
-
-- [Kiến trúc](docs/architecture.md)
-- [Cấu trúc source](docs/project-structure.md)
-- [Database](docs/database.md)
-- [API](docs/api.md)
-- [Tính năng](docs/features.md)
-- [Sẵn sàng DevOps](docs/devops-readiness.md)
-- [Đặc tả V2](docs/StudyForge_V2_Full_Codex_Handoff.md)
-
 Git hiện chỉ ở local; chưa cấu hình remote hoặc push GitHub.
