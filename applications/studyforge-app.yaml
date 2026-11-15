@@ -8,7 +8,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 spec:
-  project: default
+  project: studyforge
   source:
     repoURL: git@gitlab.thsown.com:thsown_group/studyforge-gitops.git
     targetRevision: main
