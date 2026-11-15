@@ -11,7 +11,9 @@ metadata:
     argocd.argoproj.io/sync-options: Prune=false
 spec:
   instances: 1
-  imageName: ghcr.io/cloudnative-pg/postgresql:17.11
+  # Explicit flavor and Debian base avoid deprecated ambiguous rolling tags.
+  # The multi-architecture digest makes the database image reproducible.
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-standard-trixie@sha256:b310491521ece4ec0f5a44008ac607352e96bff20883833d0acd833d80d26c5b
 
   bootstrap:
     initdb:
