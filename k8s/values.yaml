@@ -62,13 +62,17 @@ database:
 ingress:
   enabled: true
   className: nginx
-  annotations: {}
-  host: studyforge.thsown.me
-  path: /
-  pathType: Prefix
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  hosts:
+    - host: studyforge.thsown.me
+      paths:
+        - path: /
+          pathType: Prefix
   tls:
-    enabled: true
-    secretName: studyforge-tls
+    - secretName: studyforge-tls
+      hosts:
+        - studyforge.thsown.me
 
 podSecurityContext:
   runAsNonRoot: true
