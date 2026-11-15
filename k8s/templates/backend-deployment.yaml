@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "studyforge.backendName" . }}
+  labels:
+    {{- include "studyforge.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "studyforge.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "studyforge.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ required "backend.image.tag must be set to an immutable image tag" .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.backend.service.targetPort }}
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: HOST
+              value: 0.0.0.0
+            - name: API_PORT
+              value: {{ .Values.backend.service.targetPort | quote }}
+            - name: PGHOST
+              value: {{ .Values.database.host | quote }}
+            - name: PGPORT
+              value: {{ .Values.database.port | quote }}
+            - name: PGDATABASE
+              value: {{ .Values.database.name | quote }}
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.credentialsSecret.name }}
+                  key: {{ .Values.database.credentialsSecret.usernameKey }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.database.credentialsSecret.name }}
+                  key: {{ .Values.database.credentialsSecret.passwordKey }}
+            - name: ALLOWED_ORIGINS
+              value: {{ .Values.backend.config.allowedOrigins | quote }}
+            - name: SECURE_COOKIES
+              value: {{ .Values.backend.config.secureCookies | quote }}
+            - name: SESSION_TTL_SECONDS
+              value: {{ .Values.backend.config.sessionTtlSeconds | quote }}
+            - name: MERRIAM_WEBSTER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.externalApiSecret.name }}
+                  key: {{ .Values.backend.externalApiSecret.merriamWebsterKey }}
+            - name: DEEPL_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.externalApiSecret.name }}
+                  key: {{ .Values.backend.externalApiSecret.deeplKey }}
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            periodSeconds: 20
+            timeoutSeconds: 2
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}
