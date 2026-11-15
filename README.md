@@ -202,36 +202,41 @@ Quality gate đầy đủ:
 npm run qa
 ```
 
-## Database và migrations
+## Dữ liệu và migrations
 
-PostgreSQL sử dụng named volume `studyforge-postgres`. Migration nằm trong `database/migrations/postgres` và được thực thi theo thứ tự tên file.
+Docker Compose lưu dữ liệu PostgreSQL trong named volume `studyforge-postgres`, vì vậy việc build lại hoặc thay thế container không làm mất dữ liệu. Service `migrate` áp dụng các migration còn thiếu trước khi backend khởi động.
 
-Quy tắc migration:
+Các file migration được quản lý tại `database/migrations/postgres` và chạy theo thứ tự tên file. Khi thay đổi schema:
 
-- Migration đã áp dụng không được chỉnh sửa nội dung.
-- Thay đổi schema mới phải tạo migration mới.
-- Migration được ghi checksum trong bảng `schema_migrations`.
-- Project không tự seed dữ liệu demo.
+1. Tạo một migration mới với số thứ tự tiếp theo.
+2. Không chỉnh sửa migration đã được áp dụng.
+3. Chạy `npm run db:migrate` hoặc khởi động lại Compose stack.
+4. Chạy `npm run qa` để kiểm tra toàn bộ luồng ứng dụng.
 
-## Bảo mật cấu hình
+Lịch sử và checksum của migration được lưu trong bảng `schema_migrations`. Project không tự động seed tài khoản hoặc dữ liệu demo.
 
-- Không commit `.env` hoặc API key.
-- API key Merriam-Webster và DeepL chỉ được đọc ở backend.
-- Frontend chỉ nhận các biến được cho phép thông qua `/config.js`.
-- Session được lưu bằng HttpOnly cookie.
-- Database không expose port trực tiếp ra host trong Compose mặc định.
-- Production images chạy bằng non-root user.
+## Quản lý secrets
 
-## Trạng thái kiểm thử
+- Chỉ commit `.env.example`; file `.env` thật được Git ignore.
+- Database password và API key chỉ được truyền vào container tại runtime, không được đóng gói vào image.
+- Merriam-Webster và DeepL được gọi từ backend; thông tin xác thực không được gửi tới trình duyệt.
+- Frontend chỉ nhận cấu hình công khai đã được cho phép thông qua `/config.js`.
+- Compose mặc định không publish PostgreSQL ra host và các production image chạy bằng non-root user.
 
-Lần xác minh gần nhất: **15/11/2026**.
+Khi triển khai ngoài môi trường local, hãy cung cấp secrets bằng cơ chế quản lý bí mật của nền tảng triển khai thay vì commit file `.env` vào repository.
 
-- npm audit: không phát hiện vulnerability.
-- TypeScript strict check: pass.
-- Unit tests: `25/25` pass.
-- Frontend Vite production build: pass.
-- Backend esbuild production build: pass.
-- Docker quality container: pass.
-- Docker Compose smoke test: pass.
-- PostgreSQL, backend và frontend healthcheck: healthy.
-- Dữ liệu PostgreSQL được giữ nguyên qua rebuild container.
+## Xác minh trước khi triển khai
+
+Chạy quality gate của source code:
+
+```powershell
+npm run check
+```
+
+Xác minh thêm production images và luồng frontend → backend → PostgreSQL bằng Docker Compose:
+
+```powershell
+npm run qa
+```
+
+README không ghi cố định số lượng test hoặc kết quả của một lần chạy cụ thể. Khi tích hợp GitLab CI/CD, pipeline và test report sẽ là nguồn trạng thái kiểm thử hiện hành.
