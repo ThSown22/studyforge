@@ -202,6 +202,30 @@ Quality gate đầy đủ:
 npm run qa
 ```
 
+## GitLab CI/CD
+
+Pipeline trong `.gitlab-ci.yml` sử dụng Docker Runner có tag `docker` và gồm bốn stage:
+
+| Stage | Chức năng |
+| --- | --- |
+| `validate` | Chạy lint, typecheck, unit tests và production build trong quality image |
+| `publish` | Build và push riêng frontend/backend image lên Harbor với tag là full commit SHA |
+| `verify` | Pull lại image đã publish, chạy PostgreSQL tạm thời, migration, healthcheck và smoke test end-to-end |
+| `update-gitops` | Cập nhật frontend/backend image trong `studyforge-gitops/k8s/values.yaml` |
+
+Merge Request và branch thông thường chỉ chạy source validation. Image chỉ được publish trên default branch hoặc Git tag; GitOps chỉ được cập nhật từ default branch.
+
+Các CI/CD variable bắt buộc được cấu hình trong GitLab, không commit vào repository:
+
+| Variable | Mục đích |
+| --- | --- |
+| `HARBOR_USER` | Harbor robot account có quyền pull/push project `studyforge` |
+| `HARBOR_PASS` | Secret của Harbor robot account |
+| `GITOPS_REPO` | URL hoặc `host/group/repository.git` của `studyforge-gitops` |
+| `GITOPS_TOKEN` | Token có quyền `write_repository` trên GitOps repository |
+
+Các secret phải được đặt ở chế độ Masked và Protected; default branch tương ứng cũng phải là protected branch. Job GitOps không truy cập Kubernetes trực tiếp mà chỉ commit desired state để Argo CD đồng bộ.
+
 ## Dữ liệu và migrations
 
 Docker Compose lưu dữ liệu PostgreSQL trong named volume `studyforge-postgres`, vì vậy việc build lại hoặc thay thế container không làm mất dữ liệu. Service `migrate` áp dụng các migration còn thiếu trước khi backend khởi động.
