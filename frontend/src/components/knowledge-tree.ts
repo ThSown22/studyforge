@@ -1,4 +1,4 @@
-import type { VocabularyStats } from '../../../packages/contracts/src/index.ts';
+import type { VocabularyStats } from '@studyforge/contracts';
 
 const stages = [
   { threshold: 0, label: 'Hạt giống', message: 'Lưu từ đầu tiên để gieo hạt cho khu vườn.' },

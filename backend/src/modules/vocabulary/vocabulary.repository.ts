@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { LearningStatus, SavedWordSummary, VocabularyStats } from '../../../../packages/contracts/src/index.ts';
+import type { LearningStatus, SavedWordSummary, VocabularyStats } from '@studyforge/contracts';
 import type { VocabularyRepository } from './vocabulary.service.ts';
 
 interface WordRow { id: string; term: string; collection_id: string; collection_name: string; status: LearningStatus; saved_at: Date; personal_note: string | null }

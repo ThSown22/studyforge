@@ -1,4 +1,4 @@
-import type { User } from '../../../../packages/contracts/src/index.ts';
+import type { User } from '@studyforge/contracts';
 import { modal } from '../../components/modal.ts';
 import { api } from '../../services/api.ts';
 import { refresh, toast } from '../../core/dom.ts';

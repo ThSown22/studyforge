@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { DictionaryResult } from '../packages/contracts/src/index.ts';
-import { DictionaryService } from '../backend/src/modules/dictionary/dictionary.service.ts';
-import { DeepLTranslationClient } from '../backend/src/modules/dictionary/translation.provider.ts';
+import type { DictionaryResult } from '@studyforge/contracts';
+import { DictionaryService } from '../../backend/src/modules/dictionary/dictionary.service.ts';
+import { DeepLTranslationClient } from '../../backend/src/modules/dictionary/translation.provider.ts';
 
 function dictionaryResult(): DictionaryResult {
   return {

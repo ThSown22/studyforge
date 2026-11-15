@@ -4,8 +4,9 @@ import { createReadStream } from 'node:fs';
 import { stat, readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { frontendOutput } from './paths.mjs';
-import { frontendConfig, browserConfigScript } from './frontend-config.mjs';
+import { frontendConfig, browserConfigScript } from './config.mjs';
+
+const frontendOutput = resolve(import.meta.dirname, 'dist');
 
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.ico': 'image/x-icon' };
 

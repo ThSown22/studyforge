@@ -1,4 +1,4 @@
-import type { CollectionSummary } from '../../../../packages/contracts/src/index.ts';
+import type { CollectionSummary } from '@studyforge/contracts';
 import { HttpError } from '../../shared/errors.ts';
 import { record, text } from '../../shared/validation.ts';
 

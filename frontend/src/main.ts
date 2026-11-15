@@ -8,7 +8,7 @@ import { renderCollectionPage } from './pages/collection-page.ts';
 import { renderDictionaryPage } from './pages/dictionary-page.ts';
 import { renderReviewPage } from './pages/review-page.ts';
 import { showAuthDialog } from './features/auth/auth-dialog.ts';
-import type { User } from '../../packages/contracts/src/index.ts';
+import type { User } from '@studyforge/contracts';
 
 const app=document.getElementById('app')!;
 let current=new AbortController();

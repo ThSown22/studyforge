@@ -1,4 +1,4 @@
-import type { DictionaryResult } from '../../../packages/contracts/src/index.ts';
+import type { DictionaryResult } from '@studyforge/contracts';
 import { api } from './api.ts';
 
 export type DefinitionLanguage = 'en' | 'vi';

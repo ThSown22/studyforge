@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { frontendConfig } from './frontend-config.mjs';
-import { createFrontendServer } from './frontend-server.mjs';
+import { frontendConfig } from '../../frontend/config.mjs';
+import { createFrontendServer } from '../../frontend/server.mjs';
 
 test('browser configuration exposes only the explicitly public key', () => {
   const before = process.env.STUDYFORGE_PRIVATE_TEST;

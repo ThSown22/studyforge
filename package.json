@@ -4,6 +4,11 @@
   "private": true,
   "description": "StudyForge modular monorepo: TypeScript frontend và Node.js backend.",
   "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "packages/*"
+  ],
   "engines": {
     "node": ">=22.23.4"
   },
@@ -12,11 +17,11 @@
     "typescript": "6.0.3"
   },
   "scripts": {
-    "build": "node scripts/build.mjs",
-    "test": "node --experimental-strip-types --test tests/dictionary-parser.test.ts tests/dictionary-client.test.ts tests/dictionary-translation.test.ts tests/knowledge-tree.test.ts tests/postgres-resilience.test.ts tests/v2-business.test.ts scripts/frontend-config.test.mjs",
+    "build": "npm run build --workspace=@studyforge/frontend && npm run build --workspace=@studyforge/backend",
+    "test": "node --experimental-strip-types --test tests/unit/dictionary-parser.test.ts tests/unit/dictionary-client.test.ts tests/unit/dictionary-translation.test.ts tests/unit/knowledge-tree.test.ts tests/unit/postgres-resilience.test.ts tests/unit/v2-business.test.ts tests/unit/frontend-config.test.mjs",
     "lint": "node scripts/check.mjs",
     "format:check": "node scripts/check.mjs --format-only",
-    "typecheck": "node scripts/typecheck.mjs",
+    "typecheck": "npm run typecheck --workspace=@studyforge/contracts && npm run typecheck --workspace=@studyforge/frontend && npm run typecheck --workspace=@studyforge/backend && tsc --project tests/tsconfig.json",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "db:migrate": "docker compose run --rm migrate",
     "compose:up": "docker compose up --build -d",

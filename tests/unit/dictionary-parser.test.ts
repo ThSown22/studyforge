@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { dictionaryText, parseMerriamLearners } from '../backend/src/modules/dictionary/merriam.parser.ts';
+import { dictionaryText, parseMerriamLearners } from '../../backend/src/modules/dictionary/merriam.parser.ts';
 
 const sense = (text: string, example: string) => ['sense', { dt: [['text', `{bc}${text}`], ['vis', [{ t: example }]]] }];
 

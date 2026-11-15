@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getKnowledgeGrowth, renderKnowledgeTree } from '../frontend/src/components/knowledge-tree.ts';
+import { getKnowledgeGrowth, renderKnowledgeTree } from '../../frontend/src/components/knowledge-tree.ts';
 
 const stats = (points: number) => ({ total: points, known: 0, reviewEvents: 0 });
 

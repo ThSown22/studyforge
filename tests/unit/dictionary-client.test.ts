@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { MerriamClient } from '../backend/src/modules/dictionary/merriam.client.ts';
-import { DictionaryService } from '../backend/src/modules/dictionary/dictionary.service.ts';
+import { MerriamClient } from '../../backend/src/modules/dictionary/merriam.client.ts';
+import { DictionaryService } from '../../backend/src/modules/dictionary/dictionary.service.ts';
 
 const response = [{ meta: { id: 'study' }, hwi: { hw: 'study' }, fl: 'verb',
   def: [{ sseq: [[['sense', { dt: [['text', '{bc}learn carefully']] }]]] }] }];

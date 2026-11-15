@@ -1,4 +1,4 @@
-import type { User, VocabularyStats } from '../../../packages/contracts/src/index.ts';
+import type { User, VocabularyStats } from '@studyforge/contracts';
 import { el, bindLinks } from '../core/dom.ts';
 import { api } from '../services/api.ts';
 import { getKnowledgeGrowth, renderKnowledgeTree } from '../components/knowledge-tree.ts';

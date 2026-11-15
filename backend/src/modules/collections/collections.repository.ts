@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Pool } from 'pg';
-import type { CollectionSummary } from '../../../../packages/contracts/src/index.ts';
+import type { CollectionSummary } from '@studyforge/contracts';
 import type { CollectionRepository } from './collections.service.ts';
 
 interface CollectionRow { id: string; name: string; description: string | null; word_count: string; created_at: Date }

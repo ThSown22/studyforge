@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { User } from '../../../../packages/contracts/src/index.ts';
+import type { User } from '@studyforge/contracts';
 
 export interface UserRow { id: string; email: string; display_name: string; created_at: Date; password_hash: string }
 export function publicUser(row: UserRow): User {

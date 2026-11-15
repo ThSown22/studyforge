@@ -1,8 +1,19 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, readdir, stat } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname } from 'node:path';
-import { sourceFiles } from './build.mjs';
-import { root } from './paths.mjs';
+
+const root = resolve(import.meta.dirname, '..');
+async function sourceFiles(directory) {
+  let entries;
+  try { entries = await readdir(directory, { withFileTypes: true }); }
+  catch (error) { if (error.code === 'ENOENT') return []; throw error; }
+  const nested = await Promise.all(entries.map(async entry => {
+    if (entry.isDirectory() && ['node_modules', 'dist', '.git', '.cache', '.tmp', 'tmp', 'coverage'].includes(entry.name)) return [];
+    const path = resolve(directory, entry.name);
+    return entry.isDirectory() ? sourceFiles(path) : [path];
+  }));
+  return nested.flat();
+}
 
 const formatOnly = process.argv.includes('--format-only');
 const files = (await Promise.all(['frontend', 'backend', 'packages', 'scripts', 'tests'].map((dir) => sourceFiles(resolve(root, dir))))).flat().filter((file) => /\.(ts|js|mjs|css|html)$/.test(file));

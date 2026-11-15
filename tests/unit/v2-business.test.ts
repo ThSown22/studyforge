@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { CollectionsService } from '../backend/src/modules/collections/collections.service.ts';
-import { VocabularyService } from '../backend/src/modules/vocabulary/vocabulary.service.ts';
-import { DictionaryService } from '../backend/src/modules/dictionary/dictionary.service.ts';
-import { HttpError } from '../backend/src/shared/errors.ts';
-import type { CollectionRepository } from '../backend/src/modules/collections/collections.service.ts';
-import type { VocabularyRepository } from '../backend/src/modules/vocabulary/vocabulary.service.ts';
-import type { DictionaryResult, SavedWordSummary } from '../packages/contracts/src/index.ts';
+import { CollectionsService } from '../../backend/src/modules/collections/collections.service.ts';
+import { VocabularyService } from '../../backend/src/modules/vocabulary/vocabulary.service.ts';
+import { DictionaryService } from '../../backend/src/modules/dictionary/dictionary.service.ts';
+import { HttpError } from '../../backend/src/shared/errors.ts';
+import type { CollectionRepository } from '../../backend/src/modules/collections/collections.service.ts';
+import type { VocabularyRepository } from '../../backend/src/modules/vocabulary/vocabulary.service.ts';
+import type { DictionaryResult, SavedWordSummary } from '@studyforge/contracts';
 
 const word: SavedWordSummary={id:'word-1',term:'resilient',collectionId:'collection-1',collectionName:'IT',status:'new',savedAt:new Date().toISOString(),personalNote:null};
 

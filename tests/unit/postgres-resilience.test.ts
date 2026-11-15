@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { waitForPostgres } from '../backend/src/infrastructure/database/postgres.ts';
+import { waitForPostgres } from '../../backend/src/infrastructure/database/postgres.ts';
 
 test('PostgreSQL startup probe retries transient failures', async () => {
   let queries = 0;

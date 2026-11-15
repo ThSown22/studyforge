@@ -1,4 +1,4 @@
-import type { ApiErrorBody } from '../../../packages/contracts/src/index.ts';
+import type { ApiErrorBody } from '@studyforge/contracts';
 
 declare global { interface Window { __STUDYFORGE_CONFIG__?: { PUBLIC_API_BASE_URL?: string } } }
 export class ApiError extends Error {

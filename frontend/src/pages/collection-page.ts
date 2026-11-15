@@ -1,4 +1,4 @@
-import type { CollectionSummary, LearningStatus, SavedWordSummary, User } from '../../../packages/contracts/src/index.ts';
+import type { CollectionSummary, LearningStatus, SavedWordSummary, User } from '@studyforge/contracts';
 import { bindLinks, el, escapeHtml as e, openAuth } from '../core/dom.ts';
 import { api } from '../services/api.ts';
 

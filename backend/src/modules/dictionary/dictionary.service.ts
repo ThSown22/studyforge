@@ -1,4 +1,4 @@
-import type { DictionaryEntry, DictionaryResult, SavedWordSummary } from '../../../../packages/contracts/src/index.ts';
+import type { DictionaryEntry, DictionaryResult, SavedWordSummary } from '@studyforge/contracts';
 import { HttpError } from '../../shared/errors.ts';
 import type { TranslationProvider } from './translation.provider.ts';
 

@@ -1,4 +1,4 @@
-import type { User, CollectionSummary, DictionaryResult } from '../../../packages/contracts/src/index.ts';
+import type { User, CollectionSummary, DictionaryResult } from '@studyforge/contracts';
 import { el, escapeHtml as e, bindLinks, openAuth, toast } from '../core/dom.ts';
 import { api } from '../services/api.ts';
 import { lookupDictionary } from '../services/dictionary-api.ts';

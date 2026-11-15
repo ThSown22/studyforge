@@ -1,4 +1,4 @@
-import type { DictionaryResult } from '../../../packages/contracts/src/index.ts';
+import type { DictionaryResult } from '@studyforge/contracts';
 import { el, escapeHtml as e } from '../core/dom.ts';
 
 export function renderDictionaryResult(

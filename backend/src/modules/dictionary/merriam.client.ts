@@ -1,6 +1,6 @@
 import { HttpError } from '../../shared/errors.ts';
 import { parseMerriamLearners } from './merriam.parser.ts';
-import type { DictionaryResult } from '../../../../packages/contracts/src/index.ts';
+import type { DictionaryResult } from '@studyforge/contracts';
 
 const MAX_RESPONSE_BYTES = 2_000_000;
 

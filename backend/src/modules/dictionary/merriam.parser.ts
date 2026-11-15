@@ -1,4 +1,4 @@
-import type { DictionaryEntry, DictionaryResult, DictionarySense, RelatedTerm } from '../../../../packages/contracts/src/index.ts';
+import type { DictionaryEntry, DictionaryResult, DictionarySense, RelatedTerm } from '@studyforge/contracts';
 
 // The provider's JSON is intentionally handled only on the server. Unsupported sense
 // structures fail explicitly so a lookup never appears successful after losing meanings.

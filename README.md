@@ -9,6 +9,21 @@ StudyForge là ứng dụng học từ vựng tiếng Anh cá nhân: tra từ, l
 - PostgreSQL chạy bằng Docker Compose; migration chạy bằng one-shot container trước backend.
 - Root `.env` là file cấu hình local duy nhất. Backend và frontend nhận cấu hình runtime từ Compose.
 
+## Cấu trúc repository
+
+```text
+frontend/            # Web app, Vite build và HTTP/proxy server
+backend/             # Modular monolith API, esbuild production bundle
+database/migrations/ # PostgreSQL migrations có version
+packages/contracts/  # Types dùng chung qua @studyforge/contracts
+infra/docker/        # Dockerfile riêng cho frontend và backend
+tests/unit/          # Unit tests
+tests/smoke/         # Kiểm tra end-to-end của Compose stack
+scripts/             # Quality check và PostgreSQL migration dùng chung
+```
+
+Root `package.json` khai báo npm workspaces. Frontend, backend và contracts tự sở hữu dependency, lệnh build và typecheck; root chỉ điều phối toàn bộ monorepo.
+
 ## Chạy bằng Docker Compose
 
 Yêu cầu Docker Desktop với Linux containers. Không cần cài PostgreSQL hoặc package npm global trên Windows.
@@ -36,7 +51,7 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm test` | Unit tests V2 |
 | `npm run lint` | Kiểm tra source và cấu trúc |
 | `npm run typecheck` | TypeScript strict check |
-| `npm run build` | Build local vào `dist/` (artefact, Git ignore) |
+| `npm run build` | Build frontend và backend vào `frontend/dist` và `backend/dist` |
 | `npm run db:migrate` | Chạy migration container |
 | `npm run compose:up` | Build và chạy stack |
 | `npm run compose:down` | Dừng stack, giữ volume |
@@ -44,9 +59,7 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm run smoke` | Build và chạy smoke test qua Compose |
 | `npm run qa` | Chạy quality gate rồi chạy Compose smoke test |
 
-`backend/package-lock.json` khóa dependency backend; root `package-lock.json` khóa tooling frontend/shared. Dockerfiles dùng `npm ci`; không cài global. Quality container không ghi `node_modules` ra máy Windows. Ngày 14/11/2026, QA Docker đã xác nhận lint, ba lớp typecheck frontend/backend/tests, 25 unit tests, production build, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ, hàng đợi ôn theo bộ và ba mức tự đánh giá. Merriam-Webster API thật, DeepL EN→VI thật, trang chi tiết bộ sưu tập, phiên flashcard và năm giai đoạn cây kiến thức cũng đã được kiểm tra trong trình duyệt desktop. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
-
-Backup nằm ngoài Git và Docker build context. Lệnh verify không restore đè database `studyforge`: nó tạo một database tạm trong PostgreSQL container, restore và đối chiếu dữ liệu, sau đó xóa database tạm kể cả khi kiểm tra thất bại. Sao chép file `.dump` sang nơi lưu trữ an toàn; thư mục local `backups/` không phải chiến lược lưu trữ dài hạn.
+Root `package-lock.json` khóa toàn bộ npm workspaces gồm frontend, backend và contracts. Mỗi workspace sở hữu lệnh build/typecheck của mình; Dockerfiles chỉ gọi các lệnh workspace bằng `npm ci` và `npm run`. Không cài package global và quality container không ghi `node_modules` ra máy Windows. Ngày 15/11/2026, QA Docker đã xác nhận lint, typecheck frontend/backend/contracts/tests, 25 unit tests, production build Vite/esbuild, proxy, PostgreSQL, vòng đời auth, collection CRUD, lọc/chuyển/chống lưu trùng/cập nhật trạng thái từ, hàng đợi ôn theo bộ và ba mức tự đánh giá. Merriam-Webster API thật, DeepL EN→VI thật, trang chi tiết bộ sưu tập, phiên flashcard và năm giai đoạn cây kiến thức cũng đã được kiểm tra trong trình duyệt desktop. Restart PostgreSQL và toàn stack giữ nguyên dữ liệu; backend retry kết nối mà không crash.
 
 ## Cấu hình
 

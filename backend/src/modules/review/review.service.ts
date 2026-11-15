@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { SavedWordSummary, ReviewEventSummary } from '../../../../packages/contracts/src/index.ts';
+import type { SavedWordSummary, ReviewEventSummary } from '@studyforge/contracts';
 import { HttpError } from '../../shared/errors.ts';
 import { record } from '../../shared/validation.ts';
 

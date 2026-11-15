@@ -1,4 +1,4 @@
-import type { LearningStatus, SavedWordSummary, VocabularyStats } from '../../../../packages/contracts/src/index.ts';
+import type { LearningStatus, SavedWordSummary, VocabularyStats } from '@studyforge/contracts';
 import { HttpError } from '../../shared/errors.ts';
 import { record, text } from '../../shared/validation.ts';
 import { normalizeTerm } from '../dictionary/dictionary.service.ts';

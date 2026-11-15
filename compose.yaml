@@ -79,7 +79,7 @@ services:
     build:
       context: .
       dockerfile: infra/docker/backend.Dockerfile
-    command: ["node", "scripts/smoke-v2.mjs"]
+    command: ["node", "tests/smoke/compose-smoke.mjs"]
     environment:
       SMOKE_TEST_ENABLED: "true"
       SMOKE_BASE_URL: http://frontend:3000
