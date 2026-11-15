@@ -1,3 +1,4 @@
+# Reconciles the StudyForge CloudNativePG Cluster declared under infrastructure/.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

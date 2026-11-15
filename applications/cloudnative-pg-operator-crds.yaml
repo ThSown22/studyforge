@@ -1,3 +1,4 @@
+# Installs the CloudNativePG operator and its CRDs from the official Helm chart.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:

@@ -1,3 +1,4 @@
+# Deploys the StudyForge migration job, backend, frontend, services, and ingress.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
