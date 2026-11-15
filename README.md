@@ -38,8 +38,6 @@ Compose chờ PostgreSQL healthy, chạy migration rồi mới khởi động ba
 | `npm run typecheck` | TypeScript strict check |
 | `npm run build` | Build local vào `dist/` (artefact, Git ignore) |
 | `npm run db:migrate` | Chạy migration container |
-| `npm run db:backup` | Tạo logical backup PostgreSQL dạng custom archive trong `backups/postgres/` |
-| `npm run db:backup:verify` | Restore backup mới nhất vào database tạm, đối chiếu số dòng rồi tự xóa database tạm |
 | `npm run compose:up` | Build và chạy stack |
 | `npm run compose:down` | Dừng stack, giữ volume |
 | `npm run quality:docker` | Chạy lint, typecheck, unit tests và production build trong QA container |
