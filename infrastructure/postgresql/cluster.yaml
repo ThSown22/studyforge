@@ -7,8 +7,9 @@ metadata:
     app.kubernetes.io/name: studyforge-postgres
     app.kubernetes.io/part-of: studyforge
   annotations:
-    # The database must never be removed by an automated Argo CD prune.
-    argocd.argoproj.io/sync-options: Prune=false
+    # Preserve the database when it is removed from Git or its Argo CD
+    # Application is deleted. Backups remain a separate responsibility.
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
 spec:
   instances: 1
   # Explicit flavor and Debian base avoid deprecated ambiguous rolling tags.
