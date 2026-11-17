@@ -1,52 +1,54 @@
 # StudyForge
 
-StudyForge là ứng dụng web học từ vựng tiếng Anh cá nhân hóa. Người dùng có thể tra từ, lưu mỗi từ vào một bộ sưu tập, theo dõi mức độ ghi nhớ và ôn tập bằng flashcard theo đúng chủ đề mình lựa chọn.
+StudyForge là ứng dụng web học từ vựng tiếng Anh dành cho trải nghiệm desktop. Người dùng có thể tra từ, lưu từ theo bộ sưu tập, theo dõi mức độ ghi nhớ và ôn tập bằng flashcard.
 
-Project được xây dựng theo hướng **Docker-first modular monolith**, phù hợp để học full-stack, thực hành DevOps và phát triển tiếp thành hệ thống triển khai qua GitLab CI/CD, container registry và Kubernetes.
+- **Live demo:** [studyforge.thsown.me](https://studyforge.thsown.me)
+- **Deployment repository:** [studyforge-gitops](http://gitlab.thsown.com/thsown_group/studyforge-gitops)
 
-> Phạm vi hiện tại tập trung vào trải nghiệm web desktop. Project không chứa dữ liệu mẫu và không tự động seed tài khoản hoặc từ vựng.
+Source code được tổ chức theo mô hình modular monolith, chạy local bằng Docker Compose và được phân phối qua GitLab CI, Harbor và Argo CD. Repository này chịu trách nhiệm cho application source, container images và CI quality gates; Kubernetes manifests và runbook vận hành nằm trong `studyforge-gitops`.
 
-## Tính năng chính
+## Tính năng
 
-- Đăng ký, đăng nhập và session bằng HttpOnly cookie.
+- Đăng ký, đăng nhập và duy trì phiên bằng HttpOnly cookie.
 - Tra từ Anh–Anh qua Merriam-Webster Learner's Dictionary API.
 - Dịch định nghĩa Anh–Việt theo yêu cầu qua DeepL API.
-- Phiên âm IPA, phát âm, nghĩa, ví dụ và Word Family.
-- Quản lý bộ sưu tập từ vựng cá nhân.
-- Mỗi từ chỉ thuộc một bộ sưu tập.
-- Ba trạng thái ghi nhớ: Chưa học, Đang học và Đã nhớ.
-- Flashcard theo từng bộ sưu tập với ba mức tự đánh giá.
-- Cây kiến thức phát triển theo số từ đã lưu, từ đã nhớ và lượt ôn.
+- Hiển thị IPA, phát âm, nghĩa, ví dụ và Word Family.
+- Tổ chức từ vựng theo bộ sưu tập cá nhân.
+- Theo dõi ba trạng thái ghi nhớ: Chưa học, Đang học và Đã nhớ.
+- Ôn tập flashcard theo từng bộ sưu tập với ba mức tự đánh giá.
+- Cây kiến thức phát triển theo số từ đã lưu, số từ đã nhớ và lượt ôn.
 
-## Kiến trúc
+> Phạm vi hiện tại tập trung vào web desktop. Project không tự động seed tài khoản hoặc dữ liệu demo.
+
+## Kiến trúc ứng dụng
 
 ```text
 Browser
    │
    ▼
-Frontend container
+Frontend
 Vite build + Node HTTP server + /api reverse proxy
    │
    ▼
-Backend container
+Backend
 Node.js modular monolith
    │
    ├── Merriam-Webster API
    ├── DeepL API
    │
    ▼
-PostgreSQL container
+PostgreSQL
 ```
 
-Backend được tổ chức theo module nghiệp vụ:
+Backend được chia theo module nghiệp vụ nhưng vẫn được build và triển khai như một ứng dụng thống nhất:
 
 - `auth`: tài khoản và phiên đăng nhập.
 - `collections`: quản lý bộ sưu tập.
-- `vocabulary`: lưu từ và trạng thái ghi nhớ.
-- `dictionary`: từ điển, parser và dịch nghĩa.
-- `review`: hàng đợi flashcard và lịch sử tự đánh giá.
+- `vocabulary`: từ đã lưu và trạng thái ghi nhớ.
+- `dictionary`: tích hợp từ điển, parser và dịch nghĩa.
+- `review`: flashcard và lịch sử tự đánh giá.
 
-Migration chạy trong một one-shot container trước khi backend khởi động. Frontend chỉ được khởi động sau khi backend healthy.
+Frontend và backend dùng chung TypeScript contracts qua npm workspace `@studyforge/contracts`.
 
 ## Công nghệ
 
@@ -55,212 +57,169 @@ Migration chạy trong một one-shot container trước khi backend khởi đ�
 | Frontend | TypeScript, Vite, HTML, CSS |
 | Backend | Node.js, TypeScript, esbuild |
 | Database | PostgreSQL 17 |
-| Shared contracts | npm workspace `@studyforge/contracts` |
-| Container | Docker, Docker Compose |
-| Quality | TypeScript strict mode, Node test runner, smoke test |
+| Shared contracts | npm workspaces |
+| Local runtime | Docker, Docker Compose |
+| CI | GitLab CI, Docker Runner |
+| Registry | Harbor |
+| CD | Argo CD và GitOps |
 
-## Cấu trúc repository
+## Khởi chạy local
 
-```text
-StudyForge/
-├── frontend/               # Frontend source, Vite build và HTTP/proxy server
-│   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── tsconfig.json
-├── backend/                # Modular monolith API
-│   ├── src/
-│   │   ├── modules/
-│   │   ├── http/
-│   │   ├── config/
-│   │   ├── infrastructure/
-│   │   └── shared/
-│   ├── package.json
-│   └── tsconfig.json
-├── database/
-│   └── migrations/postgres/
-├── packages/
-│   └── contracts/          # Types trao đổi giữa frontend và backend
-├── infra/
-│   └── docker/             # Dockerfile riêng cho frontend và backend
-├── tests/
-│   ├── unit/
-│   └── smoke/
-├── scripts/                # Quality check và PostgreSQL migration
-├── compose.yaml
-├── package.json            # Điều phối npm workspaces
-├── package-lock.json       # Lockfile duy nhất của monorepo
-└── .env.example
-```
+### Yêu cầu
 
-## Yêu cầu môi trường
-
-Để chạy ứng dụng bằng Docker:
-
-- Docker Desktop với Linux containers.
+- Docker Desktop chạy Linux containers.
 - Docker Compose v2.
 
-Không cần cài PostgreSQL Server hoặc package npm global trên Windows.
+Node.js chỉ cần thiết khi chạy các lệnh development trực tiếp trên host. Phiên bản tối thiểu được khai báo trong `package.json`.
 
-Nếu muốn chạy quality check trực tiếp trên máy:
+### 1. Tạo cấu hình
 
-- Node.js `22.23.4` trở lên.
-- npm tương thích với lockfile v3.
-
-## Khởi chạy nhanh
-
-### 1. Tạo cấu hình môi trường
-
-Trong PowerShell tại thư mục project:
+PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-Mở `.env` và thay `STUDYFORGE_DB_PASSWORD` bằng mật khẩu dài, ngẫu nhiên.
+Bash:
 
-### 2. Build và chạy toàn bộ stack
+```bash
+cp .env.example .env
+```
 
-```powershell
+Đặt một giá trị ngẫu nhiên, đủ mạnh cho `STUDYFORGE_DB_PASSWORD`. Hai API key từ điển là tùy chọn; nếu không có DeepL, chức năng tra nghĩa tiếng Anh vẫn hoạt động.
+
+### 2. Chạy stack
+
+```bash
 docker compose up --build -d
 docker compose ps
 ```
 
-Sau khi các container healthy:
+Khi các service đã healthy:
 
 - Website: <http://127.0.0.1:3000>
 - Health endpoint: <http://127.0.0.1:3000/api/health>
 
-### 3. Xem log
+Xem log:
 
-```powershell
+```bash
 docker compose logs -f frontend backend migrate
 ```
 
-### 4. Dừng stack
+Dừng stack nhưng giữ dữ liệu PostgreSQL:
 
-```powershell
+```bash
 docker compose down
 ```
 
-Lệnh trên giữ nguyên named volume PostgreSQL. Không chạy `docker compose down -v` nếu muốn bảo toàn tài khoản, bộ sưu tập và tiến độ học.
+`docker compose down -v` sẽ xóa named volume và toàn bộ dữ liệu local.
 
-## Cấu hình môi trường
+## Cấu hình local
 
-Project chỉ sử dụng một file `.env` tại root. File thật được Git ignore; chỉ `.env.example` được commit.
+Docker Compose đọc một file `.env` tại repository root. File mẫu mô tả các biến được hỗ trợ:
 
 | Biến | Bắt buộc | Mục đích |
 | --- | --- | --- |
 | `STUDYFORGE_DB_PASSWORD` | Có | Mật khẩu PostgreSQL local |
-| `STUDYFORGE_HOST_FE_PORT` | Không | Port frontend expose ra host, mặc định `3000` |
+| `STUDYFORGE_HOST_FE_PORT` | Không | Port frontend trên host, mặc định `3000` |
 | `STUDYFORGE_ALLOWED_ORIGINS` | Không | Danh sách origin được backend chấp nhận |
 | `STUDYFORGE_SESSION_TTL_SECONDS` | Không | Thời hạn session, mặc định 7 ngày |
-| `STUDYFORGE_MERRIAM_WEBSTER_API_KEY` | Không | API key từ điển, chỉ tồn tại ở backend |
-| `STUDYFORGE_DEEPL_API_KEY` | Không | API key dịch EN→VI, chỉ tồn tại ở backend |
+| `STUDYFORGE_MERRIAM_WEBSTER_API_KEY` | Không | API key từ điển phía backend |
+| `STUDYFORGE_DEEPL_API_KEY` | Không | API key dịch EN→VI phía backend |
 
-Nếu không cấu hình DeepL, tra nghĩa tiếng Anh vẫn hoạt động. Frontend không nhận database password hoặc API key của nhà cung cấp.
+Không đưa database password hoặc API key vào frontend configuration.
 
-## npm workspaces
+## Development và quality gates
 
-Monorepo gồm ba workspace:
-
-```text
-@studyforge/frontend
-@studyforge/backend
-@studyforge/contracts
-```
-
-Mỗi workspace sở hữu dependency, build script và typecheck riêng. Root `package.json` chỉ điều phối các tác vụ toàn project. Toàn bộ dependency được khóa bằng một `package-lock.json`.
-
-Để cài dependency local trong project:
-
-```powershell
+```bash
 npm ci
+npm run check
 ```
 
-Không sử dụng `npm install -g`.
-
-## Lệnh phát triển và kiểm thử
+Các lệnh chính:
 
 | Lệnh | Chức năng |
 | --- | --- |
-| `npm run build` | Build frontend bằng Vite và backend bằng esbuild |
+| `npm run build` | Build frontend và backend |
+| `npm run lint` | Kiểm tra source và cấu trúc import |
 | `npm run typecheck` | Typecheck contracts, frontend, backend và tests |
-| `npm run lint` | Kiểm tra cú pháp, import và định dạng cơ bản |
 | `npm test` | Chạy unit tests |
 | `npm run check` | Chạy lint, typecheck, unit tests và production build |
-| `npm run compose:up` | Build và chạy Compose stack |
-| `npm run compose:down` | Dừng stack nhưng giữ database volume |
-| `npm run db:migrate` | Chạy migration one-shot container |
+| `npm run db:migrate` | Chạy PostgreSQL migration bằng one-shot container |
 | `npm run quality:docker` | Chạy quality gate trong container |
-| `npm run smoke` | Kiểm tra frontend proxy, backend và PostgreSQL qua Compose |
-| `npm run qa` | Chạy quality container rồi smoke test |
+| `npm run smoke` | Smoke test frontend → backend → PostgreSQL |
+| `npm run qa` | Chạy quality container và smoke test |
 
-Quality gate đầy đủ:
+Quality gate đầy đủ trên Docker:
 
-```powershell
+```bash
 npm run qa
 ```
 
 ## GitLab CI/CD
 
-Pipeline trong `.gitlab-ci.yml` sử dụng Docker Runner có tag `docker` và gồm bốn stage:
+Pipeline sử dụng GitLab Runner có tag `docker`:
 
-| Stage | Chức năng |
+```text
+validate → publish → verify → update-gitops
+```
+
+| Stage | Trách nhiệm |
 | --- | --- |
-| `validate` | Chạy lint, typecheck, unit tests và production build trong quality image |
-| `publish` | Build và push riêng frontend/backend image lên Harbor với tag là full commit SHA |
-| `verify` | Pull lại image đã publish, chạy PostgreSQL tạm thời, migration, healthcheck và smoke test end-to-end |
-| `update-gitops` | Cập nhật frontend/backend image trong `studyforge-gitops/k8s/values.yaml` |
+| `validate` | Chạy lint, typecheck, unit tests và production build |
+| `publish` | Build và push frontend/backend image lên Harbor với full commit SHA |
+| `verify` | Pull lại image, kiểm tra numeric non-root user, chạy migration, healthcheck và smoke test |
+| `update-gitops` | Ghi image repository và full commit-SHA tag vào `studyforge-gitops/k8s/values.yaml` |
 
-Merge Request và branch thông thường chỉ chạy source validation. Image chỉ được publish trên default branch hoặc Git tag; GitOps chỉ được cập nhật từ default branch.
+Merge Request và branch thông thường luôn chạy source validation. Image chỉ được publish từ default branch hoặc Git tag; GitOps chỉ được cập nhật từ default branch. Pipeline không gọi Kubernetes trực tiếp—Argo CD triển khai desired state từ GitOps repository.
 
-Các CI/CD variable bắt buộc được cấu hình trong GitLab, không commit vào repository:
+CI/CD variables cần cấu hình trong GitLab:
 
 | Variable | Mục đích |
 | --- | --- |
-| `HARBOR_USER` | Harbor robot account có quyền pull/push project `studyforge` |
+| `HARBOR_USER` | Harbor robot account có quyền pull/push project `studyforge-app` |
 | `HARBOR_PASS` | Secret của Harbor robot account |
-| `GITOPS_REPO` | URL hoặc `host/group/repository.git` của `studyforge-gitops` |
-| `GITOPS_TOKEN` | Token có quyền `write_repository` trên GitOps repository |
+| `GITOPS_REPO` | Clone URL của `studyforge-gitops` |
+| `GITOPS_TOKEN` | Token có quyền ghi vào GitOps repository |
 
-Các secret phải được đặt ở chế độ Masked và Protected; default branch tương ứng cũng phải là protected branch. Job GitOps không truy cập Kubernetes trực tiếp mà chỉ commit desired state để Argo CD đồng bộ.
+Credentials phải được cấu hình bằng GitLab CI/CD Variables, không lưu trong source repository.
 
-## Dữ liệu và migrations
+## Database migrations
 
-Docker Compose lưu dữ liệu PostgreSQL trong named volume `studyforge-postgres`, vì vậy việc build lại hoặc thay thế container không làm mất dữ liệu. Service `migrate` áp dụng các migration còn thiếu trước khi backend khởi động.
+Migration nằm trong `database/migrations/postgres` và được chạy theo thứ tự tên file. Lịch sử cùng checksum được lưu trong bảng `schema_migrations`.
 
-Các file migration được quản lý tại `database/migrations/postgres` và chạy theo thứ tự tên file. Khi thay đổi schema:
+Khi thay đổi schema:
 
-1. Tạo một migration mới với số thứ tự tiếp theo.
-2. Không chỉnh sửa migration đã được áp dụng.
-3. Chạy `npm run db:migrate` hoặc khởi động lại Compose stack.
-4. Chạy `npm run qa` để kiểm tra toàn bộ luồng ứng dụng.
+1. Tạo migration mới với số thứ tự tiếp theo.
+2. Không sửa migration đã được áp dụng.
+3. Chạy `npm run db:migrate` hoặc khởi động Compose stack.
+4. Chạy `npm run qa` trước khi push.
 
-Lịch sử và checksum của migration được lưu trong bảng `schema_migrations`. Project không tự động seed tài khoản hoặc dữ liệu demo.
+Trong Kubernetes, migration chạy bằng một Kubernetes Job được đánh dấu là Argo CD `PreSync` hook trong Helm template. Argo CD chỉ rollout frontend và backend sau khi Job hoàn tất thành công.
 
-## Quản lý secrets
+## Cấu trúc repository
 
-- Chỉ commit `.env.example`; file `.env` thật được Git ignore.
-- Database password và API key chỉ được truyền vào container tại runtime, không được đóng gói vào image.
-- Merriam-Webster và DeepL được gọi từ backend; thông tin xác thực không được gửi tới trình duyệt.
-- Frontend chỉ nhận cấu hình công khai đã được cho phép thông qua `/config.js`.
-- Compose mặc định không publish PostgreSQL ra host và các production image chạy bằng non-root user.
-
-Khi triển khai ngoài môi trường local, hãy cung cấp secrets bằng cơ chế quản lý bí mật của nền tảng triển khai thay vì commit file `.env` vào repository.
-
-## Xác minh trước khi triển khai
-
-Chạy quality gate của source code:
-
-```powershell
-npm run check
+```text
+studyforge-app/
+├── frontend/                   # Frontend source và Node HTTP/proxy server
+├── backend/                    # Modular monolith API
+├── packages/contracts/         # Shared TypeScript contracts
+├── database/migrations/        # PostgreSQL migrations
+├── infra/docker/               # Multi-stage Dockerfiles
+├── scripts/                    # Quality và migration tooling
+├── tests/                      # Unit và smoke tests
+├── compose.yaml                # Local stack và QA profiles
+├── .gitlab-ci.yml              # CI và GitOps handoff
+├── package.json
+└── .env.example
 ```
 
-Xác minh thêm production images và luồng frontend → backend → PostgreSQL bằng Docker Compose:
+## Security design
 
-```powershell
-npm run qa
-```
+- Session được lưu bằng HttpOnly cookie; production bật secure cookie.
+- API key và database credentials chỉ được truyền vào backend tại runtime.
+- Production images chạy bằng numeric non-root user và có healthcheck.
+- PostgreSQL không publish port ra host trong Compose mặc định.
+- Kubernetes secrets, TLS, ingress và public routing được quản lý ngoài application source.
 
-README không ghi cố định số lượng test hoặc kết quả của một lần chạy cụ thể. Khi tích hợp GitLab CI/CD, pipeline và test report sẽ là nguồn trạng thái kiểm thử hiện hành.
+Chi tiết Kubernetes, CloudNativePG, Longhorn, cert-manager, NGINX Ingress và Cloudflare Tunnel được mô tả trong [studyforge-gitops](http://gitlab.thsown.com/thsown_group/studyforge-gitops).
