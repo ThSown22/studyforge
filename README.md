@@ -1,6 +1,6 @@
 # StudyForge
 
-StudyForge là ứng dụng web học từ vựng tiếng Anh được triển khai theo mô hình CI/CD và GitOps trên Kubernetes On-Premise. Người dùng có thể tra từ, dịch định nghĩa, lưu từ theo bộ sưu tập, theo dõi mức độ ghi nhớ và ôn tập bằng flashcard.
+StudyForge là ứng dụng web học từ vựng tiếng Anh được triển khai theo mô hình CI/CD và GitOps trên Kubernetes On-Premise. Người dùng có thể tra từ, dịch định nghĩa, lưu từ theo bộ sưu tập, theo dõi mức độ ghi nhớ và ôn tập từ vựng bằng flashcard.
 
 - **Live application:** [studyforge.thsown.me](https://studyforge.thsown.me)
 - **Application source:** [`studyforge-app/`](./studyforge-app/)
@@ -16,9 +16,9 @@ studyforge/
 └── studyforge-gitops/    # Kubernetes desired state và Continuous Delivery
 ```
 
-| Thư mục | Vai trò | Tài liệu chính |
-| --- | --- | --- |
-| [`studyforge-app/`](./studyforge-app/) | Phát triển và kiểm thử sản phẩm; build, verify và publish container images | [`studyforge-app/README.md`](./studyforge-app/README.md) |
+| Thư mục                                     | Vai trò                                                                            | Tài liệu chính                                               |
+| --------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| [`studyforge-app/`](./studyforge-app/)       | Phát triển và kiểm thử sản phẩm; build, verify và publish container images  | [`studyforge-app/README.md`](./studyforge-app/README.md)       |
 | [`studyforge-gitops/`](./studyforge-gitops/) | Quản lý deployment state, database, networking, storage và vận hành Kubernetes | [`studyforge-gitops/README.md`](./studyforge-gitops/README.md) |
 
 Mỗi README con là nguồn tài liệu chính cho phạm vi của thư mục đó. README tổng chỉ mô tả mối liên hệ giữa application delivery và deployment platform.
@@ -83,13 +83,13 @@ Request công khai đi theo một chiều từ Cloudflare tới frontend và bac
 
 ## Công nghệ chính
 
-| Lớp | Công nghệ |
-| --- | --- |
-| Application | TypeScript, Vite, Node.js, PostgreSQL 17 |
-| Containers | Docker, Docker Compose, Harbor |
-| Continuous Integration | GitLab CI, Docker Runner |
-| Continuous Delivery | Argo CD, Helm, GitOps |
-| Kubernetes data layer | CloudNativePG, Longhorn CSI |
-| Networking | NGINX Ingress, cert-manager, Cloudflare Tunnel |
+| Lớp                   | Công nghệ                                    |
+| ---------------------- | ---------------------------------------------- |
+| Application            | TypeScript, Vite, Node.js, PostgreSQL 17       |
+| Containers             | Docker, Docker Compose, Harbor                 |
+| Continuous Integration | GitLab CI, Docker Runner                       |
+| Continuous Delivery    | Argo CD, Helm, GitOps                          |
+| Kubernetes data layer  | CloudNativePG, Longhorn CSI                    |
+| Networking             | NGINX Ingress, cert-manager, Cloudflare Tunnel |
 
 Chi tiết về tính năng, chạy local và pipeline thuộc [`studyforge-app`](./studyforge-app/). Chi tiết về bootstrap, App-of-Apps, Kubernetes resources và vận hành thuộc [`studyforge-gitops`](./studyforge-gitops/).
