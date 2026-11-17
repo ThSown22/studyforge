@@ -1,0 +1,89 @@
+nameOverride: ""
+fullnameOverride: ""
+
+imagePullSecrets:
+  - name: studyforge-harbor
+
+frontend:
+  replicaCount: 1
+  image:
+    repository: harbor.thsown.me/studyforge-app/frontend
+    # Updated to an immutable commit SHA by the studyforge-app pipeline.
+    tag: ""
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+backend:
+  replicaCount: 1
+  image:
+    repository: harbor.thsown.me/studyforge-app/backend
+    # Updated to an immutable commit SHA by the studyforge-app pipeline.
+    tag: ""
+    pullPolicy: IfNotPresent
+  service:
+    type: ClusterIP
+    port: 3001
+    targetPort: 3001
+  config:
+    allowedOrigins: https://studyforge.thsown.me
+    secureCookies: true
+    sessionTtlSeconds: 604800
+  externalApiSecret:
+    name: studyforge-backend
+    merriamWebsterKey: merriam-webster-api-key
+    deeplKey: deepl-api-key
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+database:
+  host: studyforge-postgres-rw
+  port: 5432
+  name: studyforge
+  credentialsSecret:
+    name: studyforge-postgres-app
+    usernameKey: username
+    passwordKey: password
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  hosts:
+    - host: studyforge.thsown.me
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: studyforge-tls
+      hosts:
+        - studyforge.thsown.me
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL

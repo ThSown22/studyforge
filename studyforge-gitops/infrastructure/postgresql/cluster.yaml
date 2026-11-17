@@ -1,0 +1,38 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: studyforge-postgres
+  namespace: studyforge
+  labels:
+    app.kubernetes.io/name: studyforge-postgres
+    app.kubernetes.io/part-of: studyforge
+  annotations:
+    # Preserve the database when it is removed from Git or its Argo CD
+    # Application is deleted. Backups remain a separate responsibility.
+    argocd.argoproj.io/sync-options: Prune=false,Delete=false
+spec:
+  instances: 1
+  # Explicit flavor and Debian base avoid deprecated ambiguous rolling tags.
+  # The multi-architecture digest makes the database image reproducible.
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.11-standard-trixie@sha256:b310491521ece4ec0f5a44008ac607352e96bff20883833d0acd833d80d26c5b
+
+  bootstrap:
+    initdb:
+      database: studyforge
+      owner: studyforge
+      dataChecksums: true
+
+  storage:
+    storageClass: longhorn
+    size: 5Gi
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  monitoring:
+    enablePodMonitor: false
