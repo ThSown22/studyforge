@@ -1,0 +1,104 @@
+name: studyforge
+services:
+  db:
+    image: postgres:17.11-alpine3.23
+    environment:
+      POSTGRES_USER: studyforge
+      POSTGRES_DB: studyforge
+      POSTGRES_PASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+    volumes:
+      - studyforge-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U studyforge -d studyforge"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    command: ["node", "scripts/migrate-postgres.mjs"]
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: studyforge
+      PGPASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+      PGDATABASE: studyforge
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  backend:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    environment:
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      API_PORT: "3001"
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: studyforge
+      PGPASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+      PGDATABASE: studyforge
+      FRONTEND_DIR: /app/empty-public
+      ALLOWED_ORIGINS: ${STUDYFORGE_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      SECURE_COOKIES: "false"
+      SESSION_TTL_SECONDS: ${STUDYFORGE_SESSION_TTL_SECONDS:-604800}
+      MERRIAM_WEBSTER_API_KEY: ${STUDYFORGE_MERRIAM_WEBSTER_API_KEY:-}
+      DEEPL_API_KEY: ${STUDYFORGE_DEEPL_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: infra/docker/frontend.Dockerfile
+    environment:
+      FE_HOST: 0.0.0.0
+      FE_PORT: "3000"
+      API_PROXY_TARGET: http://backend:3001
+      PUBLIC_API_BASE_URL: ""
+    ports:
+      - "${STUDYFORGE_HOST_FE_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  smoke:
+    profiles: ["qa"]
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    command: ["node", "tests/smoke/compose-smoke.mjs"]
+    environment:
+      SMOKE_TEST_ENABLED: "true"
+      SMOKE_BASE_URL: http://frontend:3000
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: studyforge
+      PGPASSWORD: ${STUDYFORGE_DB_PASSWORD:?Set STUDYFORGE_DB_PASSWORD in root .env}
+      PGDATABASE: studyforge
+    depends_on:
+      frontend:
+        condition: service_healthy
+    restart: "no"
+
+  quality:
+    profiles: ["qa"]
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+      target: quality
+    restart: "no"
+volumes:
+  studyforge-postgres:

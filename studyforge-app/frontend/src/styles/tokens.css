@@ -1,0 +1,25 @@
+:root {
+  --font-body: "Segoe UI Variable Text", "Segoe UI", Arial, sans-serif;
+  --content-width: 1200px;
+  --page-gutter: 32px;
+  --radius-panel: 22px;
+  --radius-card: 16px;
+  --radius-control: 10px;
+  --space-section: 28px;
+  --shadow-card: 0 10px 32px rgba(25, 75, 74, .07);
+  --shadow-raised: 0 18px 48px rgba(25, 75, 74, .12);
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: #194b4a;
+  background: #f7f5f0;
+  font-synthesis: none;
+  --ink: #194b4a;
+  --teal: #50beaf;
+  --teal-deep: #267f76;
+  --muted: #657975;
+  --border: #d7e5e4;
+  --cream: #f7f5f0;
+  --surface: #ffffff;
+  --surface-soft: #f1f8f5;
+  --coral: #fa777b;
+}

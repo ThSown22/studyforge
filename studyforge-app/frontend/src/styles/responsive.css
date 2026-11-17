@@ -1,0 +1,44 @@
+@media (min-width: 1500px) {
+  .header-inner { max-width: 1324px; }
+}
+
+@media (max-width: 1400px) {
+  .header-inner { padding: 0 32px; }
+}
+
+@media (max-width: 800px) {
+  .page-container { width: calc(100% - 36px); margin-top: 24px; }
+  .header-inner { padding: 0 20px; gap: 15px; }
+  .brand { flex: 1; }
+  .brand small { font-size: 8px; letter-spacing: 1px; }
+  .brand > span { font-size: 25px; }
+  .main-navigation { gap: 22px; }
+  .account-label { display: none; }
+  .account-menu { flex: 0; }
+  .account-menu > summary { padding: 5px; gap: 0; }
+  .account-menu .account-chevron { display: none; }
+}
+
+@media (max-width: 520px) {
+  .site-header { height: 72px; }
+  .header-inner { padding: 0 13px; gap: 14px; }
+  .brand > span { font-size: 23px; letter-spacing: -1.6px; }
+  .brand small { display: none; }
+  .main-navigation { gap: 19px; }
+  .main-navigation a { font-size: 11px; }
+  .main-navigation a[aria-current="page"]::after { bottom: 14px; }
+  .account-avatar { width: 31px; height: 31px; }
+  .account-menu > summary { padding: 5px; }
+  .account-panel { width: min(316px, calc(100vw - 28px)); right: 0; }
+  .page-container { width: calc(100% - 28px); margin-top: 16px; }
+  .modal { padding: 30px 23px; border-radius: 22px; }
+  .modal h2 { font-size: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

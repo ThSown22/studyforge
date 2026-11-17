@@ -1,0 +1,19 @@
+{
+  "name": "@studyforge/frontend",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.23.4" },
+  "scripts": {
+    "build": "npm run typecheck && vite build",
+    "typecheck": "tsc --project tsconfig.json",
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@studyforge/contracts": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "vite": "7.3.8"
+  }
+}
