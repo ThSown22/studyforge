@@ -15,7 +15,7 @@ WORKDIR /app
 ENV FE_HOST=0.0.0.0 FE_PORT=3000 API_PROXY_TARGET=http://backend:3001 PUBLIC_API_BASE_URL=
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 COPY frontend/config.mjs frontend/server.mjs ./frontend/
-USER node
+USER 1000:1000
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD node -e "fetch('http://127.0.0.1:'+process.env.FE_PORT+'/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "frontend/server.mjs"]

@@ -11,8 +11,9 @@ stages:
 variables:
   DOCKER_BUILDKIT: "1"
   DOCKER_CONFIG: "$CI_PROJECT_DIR/.docker"
+  APP_CONTAINER_USER: "1000:1000"
   HARBOR_REGISTRY: "harbor.thsown.me"
-  HARBOR_PROJECT: "studyforge"
+  HARBOR_PROJECT: "studyforge-app"
   GITOPS_BRANCH: "main"
 
 workflow:
@@ -76,8 +77,8 @@ verify-images:
     - BACKEND_IMAGE="${HARBOR_REGISTRY}/${HARBOR_PROJECT}/backend:${CI_COMMIT_SHA}"
     - docker pull "$FRONTEND_IMAGE"
     - docker pull "$BACKEND_IMAGE"
-    - test "$(docker image inspect --format '{{.Config.User}}' "$FRONTEND_IMAGE")" = "node"
-    - test "$(docker image inspect --format '{{.Config.User}}' "$BACKEND_IMAGE")" = "node"
+    - test "$(docker image inspect --format '{{.Config.User}}' "$FRONTEND_IMAGE")" = "$APP_CONTAINER_USER"
+    - test "$(docker image inspect --format '{{.Config.User}}' "$BACKEND_IMAGE")" = "$APP_CONTAINER_USER"
     - docker image inspect --format '{{json .Config.Healthcheck.Test}}' "$FRONTEND_IMAGE" | grep -q CMD-SHELL
     - docker image inspect --format '{{json .Config.Healthcheck.Test}}' "$BACKEND_IMAGE" | grep -q CMD-SHELL
     - VERIFY_NETWORK="studyforge-ci-${CI_PIPELINE_ID}"

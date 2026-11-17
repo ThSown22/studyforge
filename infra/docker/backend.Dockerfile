@@ -42,7 +42,7 @@ COPY database/migrations/postgres ./database/migrations/postgres
 COPY scripts/migrate-postgres.mjs ./scripts/
 COPY tests/smoke/compose-smoke.mjs ./tests/smoke/
 RUN mkdir /app/empty-public && chown -R node:node /app
-USER node
+USER 1000:1000
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s CMD node -e "fetch('http://127.0.0.1:'+process.env.API_PORT+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 CMD ["node", "dist/main.js"]
