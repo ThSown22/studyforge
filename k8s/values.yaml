@@ -7,7 +7,7 @@ imagePullSecrets:
 frontend:
   replicaCount: 1
   image:
-    repository: harbor.thsown.me/studyforge/frontend
+    repository: harbor.thsown.me/studyforge-app/frontend
     # Updated to an immutable commit SHA by the studyforge-app pipeline.
     tag: ""
     pullPolicy: IfNotPresent
@@ -26,7 +26,7 @@ frontend:
 backend:
   replicaCount: 1
   image:
-    repository: harbor.thsown.me/studyforge/backend
+    repository: harbor.thsown.me/studyforge-app/backend
     # Updated to an immutable commit SHA by the studyforge-app pipeline.
     tag: ""
     pullPolicy: IfNotPresent
@@ -80,6 +80,8 @@ podSecurityContext:
     type: RuntimeDefault
 
 containerSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
   capabilities:
